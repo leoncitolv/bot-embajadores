@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Volaris Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#aa22ff"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Volaris Ops"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Nunito',sans-serif;overflow-x:hidden;}
+
+/* ══════════════════════════════════════
+   TEMA — variables CSS
+══════════════════════════════════════ */
+:root{
+  --bg-body:     #020b2e;
+  --bg-portal:   linear-gradient(170deg,#0a0018 0%,#150030 40%,#1a0040 70%,#0d0025 100%);
+  --bg-bar:      rgba(8,0,22,0.92);
+  --bar-border:  rgba(150,80,255,0.15);
+  --bg-card:     rgba(40,0,80,0.4);
+  --card-border: rgba(180,100,255,0.15);
+  --bg-input:    rgba(60,0,100,0.3);
+  --input-border:rgba(180,100,255,0.2);
+  --text-main:   #e8d8ff;
+  --text-sub:    rgba(180,130,255,0.55);
+  --text-muted:  rgba(180,150,255,0.3);
+  --sec-label:   rgba(180,130,255,0.35);
+  --bg-modal:    rgba(8,0,20,0.96);
+  --bg-folder:   rgba(40,0,80,0.4);
+  --bg-global:   rgba(0,20,45,0.4);
+  --bg-mat-hdr:  rgba(0,35,70,0.7);
+  --bg-strip:    rgba(20,0,50,0.5);
+}
+[data-theme="light"]{
+  --bg-body:     #f0eeff;
+  --bg-portal:   linear-gradient(170deg,#f5f0ff 0%,#ece4ff 40%,#e8dcff 70%,#f0eeff 100%);
+  --bg-bar:      rgba(255,255,255,0.92);
+  --bar-border:  rgba(120,60,200,0.18);
+  --bg-card:     rgba(255,255,255,0.85);
+  --card-border: rgba(150,80,255,0.2);
+  --bg-input:    rgba(240,230,255,0.8);
+  --input-border:rgba(150,80,255,0.25);
+  --text-main:   #1a0040;
+  --text-sub:    rgba(80,0,160,0.6);
+  --text-muted:  rgba(100,60,180,0.4);
+  --sec-label:   rgba(100,60,180,0.5);
+  --bg-modal:    rgba(240,230,255,0.98);
+  --bg-folder:   rgba(230,210,255,0.7);
+  --bg-global:   rgba(230,220,255,0.5);
+  --bg-mat-hdr:  rgba(200,180,255,0.5);
+  --bg-strip:    rgba(220,210,255,0.6);
+}
+
+html,body{background:var(--bg-body);color:var(--text-main);transition:background .3s,color .3s;}
+
+/* ─── SPLASH ─── */
+#splash{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse 80% 60% at 50% -10%,#1e7fff55 0%,transparent 70%),linear-gradient(160deg,#020b2e 0%,#0a2a6e 45%,#1252c8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;gap:3rem;overflow:hidden;}
+#splash::after{content:'';position:fixed;top:0;left:-200vw;width:55vw;height:100%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,0.14) 47%,rgba(210,190,255,0.26) 50%,rgba(255,255,255,0.14) 53%,transparent 100%);pointer-events:none;z-index:200;opacity:0;animation:splashShine 2.0s cubic-bezier(.35,0,.2,1) 0.15s both;}
+@keyframes splashShine{0%{left:-200vw;opacity:0}10%{left:-20vw;opacity:1}75%{left:80vw;opacity:1}90%{left:140vw;opacity:0.4}100%{left:220vw;opacity:0}}
+.hero{display:flex;flex-direction:column;align-items:center;gap:1.4rem;width:100%;}
+.hero.exit-up{animation:heroUp 0.55s cubic-bezier(.6,0,.4,1) forwards;}
+@keyframes heroUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px)}}
+.logo-text{display:flex;align-items:center;line-height:1;position:relative;}
+.logo-text span{display:inline-block;font-size:clamp(3.4rem,15vw,7.5rem);font-weight:900;letter-spacing:-0.02em;opacity:0;background:linear-gradient(135deg,#aa22ff 0%,#cc44ff 15%,#55ccff 32%,#ffffff 50%,#55ccff 58%,#88ee44 75%,#cc44ff 90%,#aa22ff 100%);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(150,80,255,0.55));animation:planeIn 0.32s cubic-bezier(.2,1.6,.3,1) forwards;}
+.logo-text span:nth-child(1){transform:translate(-320px,-240px)rotate(-45deg)scale(1.3);animation-delay:.00s;}
+.logo-text span:nth-child(2){transform:translate(-210px,-260px)rotate(-30deg)scale(1.2);animation-delay:.07s;}
+.logo-text span:nth-child(3){transform:translate(-95px,-275px)rotate(-15deg)scale(1.1);animation-delay:.14s;}
+.logo-text span:nth-child(4){transform:translate(0,-280px)rotate(0deg)scale(1.1);animation-delay:.21s;}
+.logo-text span:nth-child(5){transform:translate(95px,-275px)rotate(15deg)scale(1.1);animation-delay:.28s;}
+.logo-text span:nth-child(6){transform:translate(210px,-260px)rotate(30deg)scale(1.2);animation-delay:.35s;}
+.logo-text span:nth-child(7){transform:translate(320px,-240px)rotate(45deg)scale(1.3);animation-delay:.42s;}
+@keyframes planeIn{0%{opacity:0}18%{opacity:1}70%{transform:translate(0,8px)rotate(0deg)}100%{opacity:1;transform:translate(0,0)rotate(0deg)}}
+.logo-shine{position:absolute;top:0;left:-200%;width:55%;height:100%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,0.65) 50%,transparent 100%);pointer-events:none;opacity:0;animation:textShine 1.1s .72s both;}
+@keyframes textShine{0%{left:-200%;opacity:0}12%{left:-40%;opacity:1}75%{left:90%;opacity:1}100%{left:250%;opacity:0}}
+.divider{width:clamp(120px,40vw,260px);height:2px;border-radius:999px;background:linear-gradient(90deg,transparent,#9955ff,transparent);opacity:0;transform:scaleX(0);animation:divIn .5s .9s cubic-bezier(.34,1.56,.64,1) forwards;}
+@keyframes divIn{to{opacity:1;transform:scaleX(1)}}
+.divider.exit-close{animation:divClose .4s forwards !important;}
+@keyframes divClose{to{opacity:0;transform:scaleX(0)}}
+.tagline{font-size:clamp(.85rem,3.5vw,1.1rem);color:#c8aaff;font-weight:800;letter-spacing:.2em;text-transform:uppercase;text-align:center;opacity:0;animation:fadeUp .5s 1.0s cubic-bezier(.22,1,.36,1) forwards;}
+.enter-wrap{display:flex;flex-direction:column;align-items:center;gap:.9rem;opacity:0;animation:fadeUp .6s 1.15s cubic-bezier(.22,1,.36,1) forwards;}
+.enter-wrap.exit-down{animation:enterDown .5s forwards !important;}
+@keyframes enterDown{to{opacity:0;transform:translateY(60px)}}
+.enter-hint{font-size:clamp(.7rem,2.8vw,.85rem);color:#bb88ff;font-weight:700;letter-spacing:.15em;text-transform:uppercase;animation:pulse 2s 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+.btn-enter{display:flex;align-items:center;justify-content:center;gap:.5em;padding:clamp(.75rem,2.8vw,1.05rem) clamp(1.8rem,7vw,3rem);border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:clamp(1rem,4.2vw,1.35rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(110deg,#3a0077,#7711cc,#aa22ff,#cc55ff,#8800dd,#5500aa);background-size:250%;color:#fff;box-shadow:0 0 30px rgba(150,0,255,.55),0 4px 22px rgba(0,0,0,.45);animation:purpleSlide 3s 1.6s ease-in-out infinite alternate;transition:transform .12s;}
+@keyframes purpleSlide{0%{background-position:0%}100%{background-position:100%}}
+.btn-enter:active{transform:scale(.94);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── LOGIN SCREEN ─── */
+#loginScreen{position:fixed;inset:0;z-index:90;background:linear-gradient(160deg,#080015 0%,#130030 50%,#0d0020 100%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;gap:1.4rem;}
+#loginScreen.show{display:flex;}
+.login-plane{font-size:2.6rem;}
+.login-title{font-size:clamp(1.1rem,4.5vw,1.4rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#aa22ff,#cc55ff,#88aaff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+.login-sub{font-size:clamp(.72rem,2.8vw,.82rem);color:rgba(180,140,255,.5);font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
+.login-form{display:flex;flex-direction:column;gap:.9rem;width:100%;max-width:300px;}
+.login-input{background:rgba(60,0,100,.35);border:1px solid rgba(180,100,255,.25);border-radius:14px;padding:.85rem 1rem;width:100%;color:#e8d8ff;font-family:'Nunito',sans-serif;font-size:clamp(.9rem,3.5vw,1rem);font-weight:800;outline:none;transition:border-color .2s;letter-spacing:.12em;text-align:center;}
+.login-input:focus{border-color:rgba(180,100,255,.55);}
+.login-input::placeholder{color:rgba(180,130,255,.25);font-weight:700;letter-spacing:.08em;}
+.btn-login{padding:.95rem;border:none;border-radius:16px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:clamp(.95rem,4vw,1.1rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(110deg,#5500aa,#aa22ff,#cc55ff);color:#fff;box-shadow:0 0 24px rgba(170,34,255,.45);transition:transform .1s,opacity .2s;}
+.btn-login:active{transform:scale(.97);}
+.btn-login:disabled{opacity:.35;cursor:not-allowed;}
+.login-error{font-size:.75rem;font-weight:900;color:#ff6688;letter-spacing:.1em;text-transform:uppercase;text-align:center;opacity:0;transition:opacity .25s;}
+.login-error.show{opacity:1;}
+
+/* ─── PORTAL ─── */
+#portal{display:none;flex-direction:column;min-height:100vh;background:var(--bg-portal);transition:background .3s;}
+#portal.show{display:flex;}
+
+/* ─── TOP BAR ─── */
+.top-bar{display:flex;align-items:center;background:var(--bg-bar);backdrop-filter:blur(20px);border-bottom:1px solid var(--bar-border);position:sticky;top:0;z-index:50;padding:.5rem .9rem;gap:.6rem;transition:background .3s,border-color .3s;}
+.top-bar-logo{font-size:clamp(.82rem,3.5vw,.95rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#aa22ff,#cc55ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;}
+.top-bar-spacer{flex:1;}
+/* Tema toggle */
+.btn-theme{background:none;border:none;cursor:pointer;font-size:1.1rem;padding:.3rem;opacity:.6;transition:opacity .2s,transform .25s;flex-shrink:0;}
+.btn-theme:hover{opacity:1;}
+.btn-theme:active{transform:rotate(20deg);}
+/* User chip */
+.top-user-chip{display:flex;align-items:center;gap:.35rem;background:rgba(100,30,200,.18);border:1px solid rgba(180,100,255,.2);border-radius:99px;padding:.28rem .65rem .28rem .32rem;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+[data-theme="light"] .top-user-chip{background:rgba(150,80,255,.1);border-color:rgba(130,60,220,.2);}
+.top-user-chip:active{background:rgba(100,30,200,.32);}
+.top-user-avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#aa22ff,#3399dd);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;color:#fff;flex-shrink:0;}
+.top-user-name{font-size:clamp(.65rem,2.5vw,.75rem);font-weight:900;letter-spacing:.04em;color:#cc88ff;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+[data-theme="light"] .top-user-name{color:#7700cc;}
+.top-user-emp{font-size:.55rem;font-weight:800;color:rgba(180,130,255,.45);letter-spacing:.06em;}
+/* Badges / pencil */
+.btn-admin-pencil{background:none;border:none;cursor:pointer;font-size:1.15rem;opacity:.3;transition:opacity .2s;padding:.28rem;flex-shrink:0;}
+.btn-admin-pencil.admin-on{opacity:1;filter:drop-shadow(0 0 6px #ffcc44);}
+.admin-badge{display:none;background:linear-gradient(135deg,#cc9900,#ffcc44);color:#1a1000;font-size:.52rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:.1rem .38rem;border-radius:99px;flex-shrink:0;}
+.admin-badge.show{display:block;}
+.sync-indicator{font-size:.58rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:.13rem .42rem;border-radius:99px;flex-shrink:0;}
+.sync-ok{background:rgba(60,200,80,.15);color:#55ee88;}
+.sync-off{background:rgba(200,120,40,.15);color:#ffaa55;}
+
+/* ─── MAIN ─── */
+#mainContent{flex:1;overflow-y:auto;padding:0 0 5rem;}
+@keyframes secFadeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── SECCIONES / CARDS ─── */
+.sec-label{padding:.85rem 1rem .35rem;font-size:.6rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--sec-label);display:flex;align-items:center;gap:.5rem;}
+.hero-card{margin:.8rem .9rem 0;background:linear-gradient(135deg,rgba(100,20,200,.28),rgba(30,0,80,.5));border:1px solid rgba(180,100,255,.2);border-radius:20px;padding:1.2rem 1.4rem;display:flex;align-items:center;gap:1rem;}
+[data-theme="light"] .hero-card{background:linear-gradient(135deg,rgba(180,140,255,.25),rgba(220,200,255,.4));border-color:rgba(150,80,255,.25);}
+.hero-card-icon{font-size:2.2rem;line-height:1;}
+.hero-card-title{font-size:clamp(.95rem,4vw,1.1rem);font-weight:900;color:#cc88ff;letter-spacing:.04em;}
+[data-theme="light"] .hero-card-title{color:#7700cc;}
+.hero-card-sub{font-size:clamp(.7rem,2.6vw,.8rem);font-weight:700;color:rgba(180,140,255,.55);margin-top:.2rem;letter-spacing:.04em;}
+[data-theme="light"] .hero-card-sub{color:rgba(100,40,180,.55);}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;padding:0 .9rem;}
+.quick-btn{display:flex;flex-direction:column;align-items:flex-start;gap:.32rem;border-radius:16px;padding:.82rem 1rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .12s;-webkit-tap-highlight-color:transparent;border:none;}
+.quick-btn:active{transform:scale(.93);}
+.quick-icon{font-size:1.3rem;}
+.quick-label{font-size:clamp(.72rem,2.8vw,.83rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;}
+.info-strip{margin:.8rem .9rem 0;background:var(--bg-strip);border:1px solid rgba(150,80,255,.12);border-radius:14px;padding:.65rem 1rem;display:flex;align-items:center;gap:.6rem;transition:background .3s;}
+
+/* ─── NOTAS / CARPETAS ─── */
+.search-wrap{padding:.6rem .9rem .3rem;}
+.search-box{display:flex;align-items:center;background:var(--bg-input);border:1px solid var(--input-border);border-radius:14px;padding:0 .8rem;gap:.5rem;transition:background .3s,border-color .3s;}
+.search-box input{flex:1;background:none;border:none;outline:none;color:var(--text-main);font-family:'Nunito',sans-serif;font-size:clamp(.88rem,3.4vw,1rem);font-weight:700;padding:.6rem 0;caret-color:#cc44ff;}
+.search-box input::placeholder{color:var(--text-muted);}
+.folder-list{display:flex;flex-direction:column;gap:.5rem;padding:.4rem .9rem;}
+.folder-item{background:var(--bg-folder);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;transition:border-color .2s,background .3s;}
+.folder-item.expanded{border-color:rgba(180,100,255,.35);}
+.folder-header{display:flex;align-items:center;gap:.6rem;padding:.8rem 1rem;cursor:pointer;user-select:none;}
+.folder-header:active{background:rgba(150,80,255,.08);}
+.folder-icon{font-size:1rem;color:rgba(180,130,255,.6);transition:transform .25s;}
+.folder-item.expanded .folder-icon{transform:rotate(90deg);}
+.folder-mat{flex:1;font-size:clamp(.88rem,3.4vw,1rem);font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--notas-color,#cc44ff);}
+.folder-count{font-size:.63rem;font-weight:800;padding:.08rem .42rem;border-radius:99px;}
+.folder-body{display:none;border-top:1px solid rgba(180,100,255,.1);}
+.folder-item.expanded .folder-body{display:block;}
+.nota-personal{padding:.6rem 1rem;border-bottom:1px solid rgba(180,100,255,.07);display:flex;flex-direction:column;gap:.38rem;}
+.nota-personal:last-child{border-bottom:none;}
+.nota-personal-text{font-size:clamp(.8rem,3vw,.9rem);font-weight:700;color:var(--text-main);line-height:1.4;}
+.nota-who{display:flex;align-items:center;gap:.38rem;flex-wrap:wrap;}
+.nota-who-badge{font-size:.56rem;font-weight:900;padding:.08rem .38rem;border-radius:99px;letter-spacing:.06em;text-transform:uppercase;}
+.badge-crea{background:rgba(85,200,255,.12);color:#55ccff;}
+.badge-cierra{background:rgba(60,200,80,.12);color:#55ee88;}
+.nota-personal-date{font-size:.6rem;font-weight:700;color:var(--text-muted);}
+.btn-add-personal{display:flex;align-items:center;gap:.4rem;width:100%;padding:.48rem 1rem;background:rgba(150,80,255,.06);border:none;border-top:1px dashed rgba(180,100,255,.15);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.73rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(180,130,255,.5);transition:background .2s;}
+.btn-add-personal:active{background:rgba(150,80,255,.14);}
+.notas-vacio{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:2.5rem 2rem;text-align:center;}
+.notas-vacio .vacio-icon{font-size:2.5rem;opacity:.3;}
+.notas-vacio p{color:#9977cc;font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;opacity:.4;}
+.btn-toggle-done{align-self:flex-start;padding:.26rem .62rem;border:none;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:clamp(.64rem,2.4vw,.74rem);font-weight:900;letter-spacing:.07em;text-transform:uppercase;transition:transform .1s;}
+.btn-toggle-done:active{transform:scale(.93);}
+.btn-toggle-done.pending{background:rgba(200,120,40,.15);color:#ffaa55;border:1px solid rgba(200,120,40,.2);}
+.btn-toggle-done.done{background:rgba(60,180,80,.15);color:#55ee88;border:1px solid rgba(60,180,80,.2);}
+.btn-admin-act{padding:.24rem .5rem;border:none;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.63rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;transition:transform .1s;}
+.btn-admin-act:active{transform:scale(.91);}
+.btn-admin-act.undo{background:rgba(80,180,80,.15);color:#88ee88;border:1px solid rgba(80,180,80,.22);}
+.btn-admin-act.del{background:rgba(200,34,68,.18);color:#ff7799;border:1px solid rgba(200,34,68,.25);}
+.btn-historial{display:flex;align-items:center;gap:.3rem;padding:.22rem .55rem;border:none;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:rgba(100,60,200,.12);color:rgba(180,130,255,.6);border:1px solid rgba(180,100,255,.15);transition:background .15s;}
+.btn-historial:active{background:rgba(100,60,200,.25);}
+.historial-wrap{background:rgba(20,0,50,.6);border-radius:10px;padding:.55rem .8rem;margin-top:.3rem;display:flex;flex-direction:column;gap:.38rem;}
+[data-theme="light"] .historial-wrap{background:rgba(200,180,255,.3);}
+.historial-row{display:flex;gap:.45rem;align-items:flex-start;}
+.historial-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:.27rem;}
+.historial-dot.crea{background:#55ccff;}.historial-dot.cierra{background:#55ee88;}.historial-dot.reabre{background:#ffaa55;}.historial-dot.edita{background:#cc88ff;}
+.historial-text{font-size:.63rem;font-weight:700;color:rgba(200,170,255,.7);line-height:1.4;}
+[data-theme="light"] .historial-text{color:rgba(80,40,140,.7);}
+.historial-text strong{color:var(--text-main);}
+.historial-time{font-size:.56rem;color:var(--text-muted);font-weight:700;white-space:nowrap;margin-left:auto;padding-left:.3rem;}
+
+/* ─── GLOBAL ─── */
+.global-stats{margin:.5rem .9rem .3rem;background:rgba(0,30,60,.5);border:1px solid rgba(85,200,255,.12);border-radius:12px;padding:.5rem .9rem;display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap;}
+[data-theme="light"] .global-stats{background:rgba(180,210,255,.3);border-color:rgba(85,150,255,.2);}
+.mat-block{margin:.5rem .9rem 0;}
+.mat-header{display:flex;align-items:center;gap:.5rem;padding:.58rem .9rem;background:var(--bg-mat-hdr);border:1px solid rgba(85,200,255,.14);border-radius:14px 14px 0 0;flex-wrap:wrap;transition:background .3s;}
+.mat-deleted .mat-header{background:rgba(60,0,20,.45);border-color:rgba(200,50,80,.15);}
+.mat-plane{font-size:.9rem;opacity:.7;}
+.mat-name{font-size:clamp(.8rem,3.2vw,.92rem);font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#88ddff;flex:1;}
+[data-theme="light"] .mat-name{color:#2255cc;}
+.mat-deleted .mat-name{color:rgba(180,100,120,.5);text-decoration:line-through;}
+.mat-device-badge{font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:.07rem .33rem;border-radius:99px;background:rgba(85,200,255,.1);color:#55ccff;}
+.mat-count{font-size:.63rem;font-weight:800;color:rgba(100,180,255,.35);}
+.mat-admin-btn{display:none;padding:.2rem .5rem;border:none;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.62rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;transition:transform .1s;}
+.mat-admin-btn:active{transform:scale(.91);}
+.mat-admin-btn.del{background:rgba(200,34,68,.18);color:#ff7799;border:1px solid rgba(200,34,68,.25);}
+.mat-admin-btn.undo{background:rgba(80,180,80,.15);color:#88ee88;border:1px solid rgba(80,180,80,.22);}
+.mat-admin-btn.del-all{background:rgba(200,100,20,.18);color:#ffaa55;border:1px solid rgba(200,100,20,.25);}
+.admin-mode-global .mat-admin-btn{display:block;}
+.mat-notas{border:1px solid rgba(85,200,255,.1);border-top:none;border-radius:0 0 14px 14px;overflow:hidden;background:var(--bg-global);transition:background .3s;}
+.mat-notas-empty{padding:.65rem 1rem;font-size:.73rem;font-weight:700;color:rgba(100,160,200,.35);letter-spacing:.08em;text-transform:uppercase;text-align:center;}
+.btn-add-to-mat{display:flex;align-items:center;gap:.35rem;width:100%;padding:.5rem 1rem;background:rgba(85,200,255,.05);border:none;border-top:1px dashed rgba(85,200,255,.1);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(85,200,255,.4);transition:background .2s;}
+.btn-add-to-mat:active{background:rgba(85,200,255,.1);}
+.nota-row-wrap{position:relative;border-top:1px solid rgba(85,200,255,.06);}
+.nota-row-wrap:first-child{border-top:none;}
+.nota-entry{background:var(--bg-global);padding:.62rem .9rem;display:flex;flex-direction:column;gap:.38rem;transition:opacity .25s ease,background .3s;}
+.nota-entry.done-entry{opacity:.3;filter:grayscale(.5);}
+.nota-entry-header{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;}
+.entry-device{font-size:.56rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:.07rem .33rem;border-radius:99px;background:rgba(85,200,255,.1);color:#55ccff;}
+.entry-fecha{font-size:.63rem;font-weight:700;color:rgba(100,180,255,.3);margin-left:auto;}
+.entry-texto{font-size:clamp(.76rem,2.9vw,.87rem);font-weight:700;color:var(--text-main);line-height:1.4;}
+.global-empty-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:2rem;text-align:center;}
+.global-empty-msg .vacio-icon{font-size:2.5rem;opacity:.3;}
+.global-empty-msg p{color:#447799;font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;opacity:.4;}
+
+/* ─── FAB ─── */
+.btn-nueva-nota{position:fixed;bottom:1.4rem;right:1.4rem;z-index:60;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--notas-color,#cc44ff),#8800cc);color:#fff;font-size:1.55rem;font-weight:900;box-shadow:0 0 20px rgba(170,34,255,.55),0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:transform .12s;}
+.btn-nueva-nota:active{transform:scale(.9);}
+
+/* ─── FOTOS ─── */
+.foto-upload-area{display:flex;flex-direction:column;gap:.6rem;}
+.foto-previews{display:flex;gap:.5rem;flex-wrap:wrap;min-height:0;}
+.foto-preview-wrap{position:relative;width:80px;height:80px;border-radius:10px;overflow:hidden;border:1px solid rgba(180,100,255,.25);flex-shrink:0;}
+.foto-preview-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-preview-remove{position:absolute;top:2px;right:2px;background:rgba(200,30,60,.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;line-height:1;}
+.btn-foto-add{display:flex;align-items:center;justify-content:center;width:80px;height:80px;border-radius:10px;border:2px dashed rgba(180,100,255,.3);background:rgba(60,0,100,.15);cursor:pointer;color:rgba(180,130,255,.5);font-size:1.4rem;flex-shrink:0;transition:background .2s;}
+.btn-foto-add:active{background:rgba(60,0,100,.3);}
+.foto-hint{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(180,130,255,.35);text-align:center;}
+.foto-uploading{font-size:.72rem;font-weight:800;color:#cc44ff;letter-spacing:.08em;text-transform:uppercase;text-align:center;padding:.3rem 0;}
+.nota-fotos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem;}
+.nota-foto-thumb{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid rgba(180,100,255,.2);cursor:pointer;transition:transform .15s;}
+.nota-foto-thumb:active{transform:scale(.93);}
+#lightbox{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:1rem;}
+#lightbox.show{display:flex;}
+#lightbox img{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain;}
+#lightbox-close{position:absolute;top:1rem;right:1rem;background:rgba(200,30,60,.8);border:none;border-radius:50%;width:36px;height:36px;color:#fff;font-size:1.1rem;cursor:pointer;font-weight:900;display:flex;align-items:center;justify-content:center;}
+
+/* ─── TUTORIAL ─── */
+#tutScreen{display:none;flex-direction:column;background:linear-gradient(170deg,#080015 0%,#120028 50%,#0d001f 100%);min-height:100vh;}
+[data-theme="light"] #tutScreen{background:linear-gradient(170deg,#f5f0ff 0%,#ece4ff 50%,#f0eeff 100%);}
+#tutScreen.show{display:flex;}
+.tut-nav{display:flex;align-items:center;gap:1rem;padding:clamp(1rem,4vw,1.3rem);background:rgba(8,0,20,.8);border-bottom:1px solid rgba(150,80,255,.12);position:sticky;top:0;z-index:10;}
+[data-theme="light"] .tut-nav{background:rgba(240,230,255,.9);}
+.btn-tut-exit{display:flex;align-items:center;gap:.4em;padding:.58rem 1.2rem;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:clamp(.88rem,3.5vw,1rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#cc2244,#ff4466);color:#fff;flex-shrink:0;}
+.btn-tut-exit:active{transform:scale(.92);}
+.tut-screen-title{font-size:clamp(1rem,4.2vw,1.25rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#aa22ff,#cc55ff,#88aaff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tut-body{display:flex;flex-direction:column;gap:1.2rem;padding:1.2rem 1rem 3rem;}
+.tut-card{border-radius:18px;overflow:hidden;}
+.tut-card-head{padding:.65rem 1.1rem;border-bottom:1px solid rgba(180,100,255,.12);display:flex;align-items:center;gap:.5rem;}
+.tut-card-title{font-size:clamp(.82rem,3.2vw,.95rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;}
+.tut-card-body{padding:.85rem 1.1rem;display:flex;flex-direction:column;gap:.65rem;}
+.tut-step{display:flex;gap:.6rem;align-items:flex-start;}
+.tut-num{font-size:.68rem;font-weight:900;padding:.13rem .42rem;border-radius:99px;flex-shrink:0;margin-top:.1rem;}
+.tut-text{font-size:clamp(.78rem,3vw,.88rem);font-weight:700;color:var(--text-main);line-height:1.5;}
+.tut-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-top:.5rem;}
+.tut-grid-item{font-size:.76rem;font-weight:700;}
+
+/* ─── MODALES ─── */
+.input-label{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sub);margin-bottom:.28rem;}
+.input-field{background:var(--bg-input);border:1px solid var(--input-border);border-radius:14px;padding:.78rem 1rem;width:100%;color:var(--text-main);font-family:'Nunito',sans-serif;font-size:clamp(.9rem,3.5vw,1rem);font-weight:700;outline:none;transition:border-color .2s,background .3s;}
+.input-field:focus{border-color:rgba(180,100,255,.5);}
+.input-field::placeholder{color:var(--text-muted);}
+.input-field:disabled{opacity:.5;}
+textarea.input-field{min-height:110px;resize:none;line-height:1.5;}
+.btn-guardar{margin-top:auto;padding:.95rem;border:none;border-radius:16px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:clamp(.95rem,4vw,1.1rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(110deg,#5500aa,#aa22ff,#cc55ff);color:#fff;box-shadow:0 0 24px rgba(170,34,255,.45);transition:transform .1s;}
+.btn-guardar:active{transform:scale(.97);}
+#modalNota{position:fixed;inset:0;z-index:350;background:var(--bg-modal);backdrop-filter:blur(20px);display:flex;flex-direction:column;transform:translateY(100%);opacity:0;transition:transform .42s cubic-bezier(.4,0,.2,1),opacity .32s ease;pointer-events:none;}
+#modalNota.show{transform:translateY(0);opacity:1;pointer-events:all;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:clamp(1rem,4vw,1.3rem);background:rgba(8,0,22,.6);border-bottom:1px solid rgba(150,80,255,.12);}
+[data-theme="light"] .modal-header{background:rgba(220,200,255,.5);border-bottom-color:rgba(150,80,255,.15);}
+.modal-title{font-size:clamp(.95rem,4vw,1.15rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#aa22ff,#cc55ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.btn-modal-cancel{background:linear-gradient(135deg,#cc2244,#ff4466);border:none;border-radius:999px;padding:.48rem 1rem;color:#fff;font-family:'Nunito',sans-serif;font-size:clamp(.8rem,3.2vw,.92rem);font-weight:900;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform .1s;}
+.btn-modal-cancel:active{transform:scale(.92);}
+.modal-body{flex:1;display:flex;flex-direction:column;padding:1.2rem;gap:1rem;overflow-y:auto;}
+/* Modal genérico overlay */
+.modal-overlay{position:fixed;inset:0;z-index:400;background:var(--bg-modal);backdrop-filter:blur(20px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.3rem;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-ol-title{font-size:clamp(1rem,4.5vw,1.3rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(135deg,#aa22ff,#cc55ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;}
+.modal-ol-sub{font-size:.78rem;color:var(--text-sub);font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center;}
+.admin-error{color:#ff5555;font-size:.78rem;font-weight:800;letter-spacing:.1em;opacity:0;transition:opacity .3s;}
+.admin-error.show{opacity:1;}
+.modal-btns{display:flex;gap:.8rem;width:100%;max-width:280px;}
+.btn-ok{flex:1;padding:.78rem;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;text-transform:uppercase;background:linear-gradient(135deg,#cc9900,#ffcc44);color:#1a1000;transition:transform .1s;}
+.btn-ok:active{transform:scale(.93);}
+.btn-ok.purple{background:linear-gradient(135deg,#7711cc,#aa22ff);color:#fff;}
+.btn-ok.red{background:linear-gradient(135deg,#cc2244,#ff4466);color:#fff;}
+.btn-cancel{flex:1;padding:.78rem;border:none;border-radius:999px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;text-transform:uppercase;background:rgba(200,100,100,.15);color:#ff8888;border:1px solid rgba(200,100,100,.2);transition:transform .1s;}
+.btn-cancel:active{transform:scale(.93);}
+.input-modal{background:rgba(40,30,0,.5);border:1px solid rgba(200,150,0,.25);border-radius:14px;padding:.88rem 1.2rem;width:100%;max-width:280px;color:#ffe08a;font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:.15em;text-align:center;outline:none;}
+[data-theme="light"] .input-modal{background:rgba(240,230,200,.8);color:#7a5500;border-color:rgba(180,130,0,.3);}
+.input-modal::placeholder{color:rgba(200,150,0,.25);}
+/* Gestión de usuarios */
+.user-list{display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:340px;max-height:40vh;overflow-y:auto;}
+.user-row{display:flex;align-items:center;gap:.6rem;background:var(--bg-card);border:1px solid var(--card-border);border-radius:12px;padding:.6rem .8rem;}
+.user-row-name{flex:1;font-size:.82rem;font-weight:900;color:var(--text-main);letter-spacing:.04em;}
+.user-row-num{font-size:.65rem;font-weight:800;color:var(--text-muted);letter-spacing:.06em;}
+.user-row-del{background:rgba(200,34,68,.15);border:1px solid rgba(200,34,68,.25);border-radius:99px;padding:.18rem .5rem;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:900;color:#ff7799;letter-spacing:.06em;text-transform:uppercase;transition:background .15s;}
+.user-row-del:active{background:rgba(200,34,68,.3);}
+.user-add-row{display:flex;gap:.5rem;width:100%;max-width:340px;flex-wrap:wrap;}
+.user-add-input{flex:1;min-width:100px;background:var(--bg-input);border:1px solid var(--input-border);border-radius:12px;padding:.65rem .8rem;color:var(--text-main);font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;outline:none;transition:border-color .2s;}
+.user-add-input:focus{border-color:rgba(180,100,255,.5);}
+.user-add-input::placeholder{color:var(--text-muted);font-weight:700;}
+.btn-user-add{padding:.65rem 1rem;border:none;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#5500aa,#aa22ff);color:#fff;white-space:nowrap;transition:transform .1s;}
+.btn-user-add:active{transform:scale(.94);}
+.users-empty{font-size:.78rem;font-weight:700;color:var(--text-muted);text-align:center;padding:.8rem;letter-spacing:.08em;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="hero" id="hero">
+    <div class="logo-text" aria-label="volaris">
+      <span>v</span><span>o</span><span>l</span><span>a</span><span>r</span><span>i</span><span>s</span>
+      <div class="logo-shine"></div>
+    </div>
+    <div class="divider" id="divider"></div>
+    <p class="tagline">Portal de operaciones</p>
+  </div>
+  <div class="enter-wrap" id="enterWrap">
+    <span class="enter-hint">¿Listo para despegar?</span>
+    <button class="btn-enter" id="btnEnter">✈ Entrar</button>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN (acceso con número de empleado) -->
+<div id="loginScreen">
+  <div class="login-plane">✈</div>
+  <div class="login-title">Acceso al portal</div>
+  <div class="login-sub">Ingresa tu número de empleado</div>
+  <div class="login-form">
+    <input class="login-input" id="loginNumero" type="text" placeholder="Número de empleado" maxlength="12" autocomplete="off" inputmode="numeric"/>
+    <button class="btn-login" id="btnLogin" disabled>Entrar →</button>
+    <div class="login-error" id="loginError">Número no autorizado. Contacta al administrador.</div>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal">
+  <div class="top-bar">
+    <span class="top-bar-logo">✈ Volaris Ops</span>
+    <div class="top-bar-spacer"></div>
+    <span class="sync-indicator sync-off" id="syncBadge">⏳</span>
+    <button class="btn-theme" id="btnTheme" title="Cambiar tema">🌙</button>
+    <div class="top-user-chip" id="topUserChip" onclick="openEditPerfil()">
+      <div class="top-user-avatar" id="topUserAvatar">?</div>
+      <div>
+        <div class="top-user-name" id="topUserName">–</div>
+        <div class="top-user-emp" id="topUserEmp">–</div>
+      </div>
+    </div>
+    <span class="admin-badge" id="adminBadge">Admin</span>
+    <button class="btn-admin-pencil" id="btnAdminPencil">✏️</button>
+  </div>
+
+  <div id="mainContent">
+
+    <!-- INICIO -->
+    <div id="sectionInicio">
+      <div class="hero-card">
+        <div class="hero-card-icon">✈</div>
+        <div>
+          <div class="hero-card-title">Volaris Ops</div>
+          <div class="hero-card-sub">Seguimiento de pendientes en flota</div>
+        </div>
+      </div>
+      <div class="sec-label">Accesos rápidos</div>
+      <div class="quick-grid">
+        <button class="quick-btn" style="background:rgba(170,34,255,.12);border:1px solid rgba(170,34,255,.22);" onclick="window.showSection('Notas');openModal('new')">
+          <span class="quick-icon">＋</span><span class="quick-label" style="color:#cc88ff;">Nueva nota</span>
+        </button>
+        <button class="quick-btn" style="background:rgba(85,200,255,.08);border:1px solid rgba(85,200,255,.18);" onclick="window.showSection('Notas')">
+          <span class="quick-icon">📋</span><span class="quick-label" style="color:#55ccff;">Mis matrículas</span>
+        </button>
+        <button class="quick-btn" style="background:rgba(136,238,68,.07);border:1px solid rgba(136,238,68,.15);" onclick="window.showSection('Global')">
+          <span class="quick-icon">🌐</span><span class="quick-label" style="color:#88ee44;">Ver global</span>
+        </button>
+        <button class="quick-btn" style="background:rgba(255,180,50,.07);border:1px solid rgba(255,180,50,.15);" onclick="openTutScreen()">
+          <span class="quick-icon">❓</span><span class="quick-label" style="color:#ffcc55;">Tutorial</span>
+        </button>
+      </div>
+      <div class="info-strip">
+        <span style="font-size:1rem;">🔄</span>
+        <span style="font-size:clamp(.68rem,2.5vw,.77rem);font-weight:700;color:rgba(180,140,255,.5);letter-spacing:.04em;">Sincronización en tiempo real · Firebase</span>
+      </div>
+    </div>
+
+    <!-- NOTAS -->
+    <div id="sectionNotas" style="display:none;">
+      <div class="sec-label">
+        📋 Matrículas
+        <span class="sync-indicator sync-off" id="syncBadge2" style="font-size:.56rem;"></span>
+        <span style="flex:1;"></span>
+        <button onclick="window.closeSection('Notas')" style="background:rgba(200,34,68,.14);border:1px solid rgba(200,34,68,.24);border-radius:99px;padding:.16rem .52rem;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.62rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#ff7799;margin-right:.9rem;">✕ Cerrar</button>
+      </div>
+      <div class="search-wrap">
+        <div class="search-box">
+          <span style="color:rgba(180,130,255,.45);">🔍</span>
+          <input type="text" id="searchNotas" placeholder="Buscar matrícula..."/>
+        </div>
+      </div>
+      <div id="notasVacio" class="notas-vacio" style="display:none;"><div class="vacio-icon">📋</div><p>Sin aviones aún<br><span style="font-size:.75em;opacity:.6">Toca + para agregar</span></p></div>
+      <div class="folder-list" id="folderList"></div>
+    </div>
+
+    <!-- GLOBAL -->
+    <div id="sectionGlobal" style="display:none;">
+      <div class="sec-label">
+        🌐 Desglose global
+        <span style="flex:1;"></span>
+        <button onclick="window.closeSection('Global')" style="background:rgba(200,34,68,.14);border:1px solid rgba(200,34,68,.24);border-radius:99px;padding:.16rem .52rem;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.62rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#ff7799;margin-right:.9rem;">✕ Cerrar</button>
+      </div>
+      <div id="globalStatsBar" class="global-stats" style="display:none;">
+        <span id="gStatMats" style="font-size:.68rem;font-weight:900;letter-spacing:.08em;color:rgba(85,200,255,.7);text-transform:uppercase;"></span>
+        <span id="gStatPend" style="font-size:.68rem;font-weight:900;letter-spacing:.08em;color:#ffaa55;text-transform:uppercase;"></span>
+        <span id="gStatDone" style="font-size:.68rem;font-weight:900;letter-spacing:.08em;color:#55ee88;text-transform:uppercase;"></span>
+      </div>
+      <div id="globalList"></div>
+    </div>
+
+  </div>
+
+  <button class="btn-nueva-nota" id="btnNuevaNota" onclick="openModal('new')" style="display:none;">＋</button>
+</div>
+
+<!-- TUTORIAL -->
+<div id="tutScreen">
+  <div class="tut-nav">
+    <button class="btn-tut-exit" onclick="closeTutScreen()">✕ Salir</button>
+    <span class="tut-screen-title">Tutorial de la App</span>
+  </div>
+  <div class="tut-body">
+    <div style="background:rgba(80,0,120,.25);border:1px solid rgba(180,100,255,.2);border-radius:18px;padding:1.2rem 1.3rem;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:.4rem;">✈</div>
+      <div style="font-size:clamp(.95rem,3.8vw,1.1rem);font-weight:900;color:#cc88ff;letter-spacing:.05em;margin-bottom:.5rem;">Portal de Operaciones Volaris</div>
+      <div style="font-size:clamp(.78rem,3vw,.9rem);font-weight:700;color:#aa88cc;line-height:1.5;">App para registrar y dar seguimiento a pendientes en los aviones de la flota. Todo se sincroniza en tiempo real y queda registrado quién hizo cada acción.</div>
+    </div>
+    <div class="tut-card" style="background:rgba(40,0,80,.35);border:1px solid rgba(180,100,255,.15);">
+      <div class="tut-card-head" style="background:rgba(150,50,255,.15);"><span>🔐</span><span class="tut-card-title" style="color:#cc88ff;">Acceso al portal</span></div>
+      <div class="tut-card-body">
+        <div class="tut-step"><span class="tut-num" style="background:rgba(85,200,255,.15);color:#55ccff;">1</span><span class="tut-text">Al entrar se te pide tu <strong style="color:#cc88ff;">número de empleado</strong>. Solo los números autorizados por el administrador pueden acceder.</span></div>
+        <div class="tut-step"><span class="tut-num" style="background:rgba(85,200,255,.15);color:#55ccff;">2</span><span class="tut-text">Toca tu <strong style="color:#cc88ff;">chip de usuario</strong> en la barra superior para actualizar tu nombre en cualquier momento.</span></div>
+      </div>
+    </div>
+    <div class="tut-card" style="background:rgba(40,0,80,.35);border:1px solid rgba(180,100,255,.15);">
+      <div class="tut-card-head" style="background:rgba(150,50,255,.15);"><span>📋</span><span class="tut-card-title" style="color:#cc88ff;">Matrículas y notas</span></div>
+      <div class="tut-card-body">
+        <div class="tut-step"><span class="tut-num" style="background:rgba(200,120,40,.2);color:#ffaa55;">1</span><span class="tut-text">Las <strong style="color:#cc88ff;">matrículas</strong> aparecen como carpetas con conteo de pendientes y hechos.</span></div>
+        <div class="tut-step"><span class="tut-num" style="background:rgba(200,120,40,.2);color:#ffaa55;">2</span><span class="tut-text">Toca <strong style="color:#ffaa55;">⏳ Pendiente</strong> para marcar como <strong style="color:#55ee88;">✓ Hecho</strong>. El sistema registra quién hizo el cambio.</span></div>
+        <div class="tut-step"><span class="tut-num" style="background:rgba(200,120,40,.2);color:#ffaa55;">3</span><span class="tut-text">Toca <strong style="color:#cc88ff;">📜 Historial</strong> en cualquier nota para ver el log completo de cambios con nombre y hora.</span></div>
+      </div>
+    </div>
+    <div style="background:rgba(20,0,50,.5);border:1px solid rgba(150,80,255,.15);border-radius:14px;padding:.9rem 1.1rem;">
+      <div style="font-size:clamp(.72rem,2.8vw,.82rem);font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(180,130,255,.5);margin-bottom:.6rem;text-align:center;">Resumen de permisos</div>
+      <div class="tut-grid">
+        <div class="tut-grid-item" style="color:#55ee88;">✓ Ver notas</div><div class="tut-grid-item" style="color:#aaddff;">Usuarios autorizados</div>
+        <div class="tut-grid-item" style="color:#55ee88;">✓ Agregar notas</div><div class="tut-grid-item" style="color:#aaddff;">Usuarios autorizados</div>
+        <div class="tut-grid-item" style="color:#55ee88;">✓ Marcar hecho</div><div class="tut-grid-item" style="color:#aaddff;">Usuarios autorizados</div>
+        <div class="tut-grid-item" style="color:#ffcc55;">⚠ Borrar notas</div><div class="tut-grid-item" style="color:#ffcc55;">Solo admin</div>
+        <div class="tut-grid-item" style="color:#ff7799;">✕ Gestionar usuarios</div><div class="tut-grid-item" style="color:#ffcc55;">Solo admin</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTA -->
+<div id="modalNota">
+  <div class="modal-header">
+    <span class="modal-title" id="modalTitleText">Nueva Nota</span>
+    <button class="btn-modal-cancel" id="btnModalCancel">✕ Cancelar</button>
+  </div>
+  <div class="modal-body">
+    <div><div class="input-label">Matrícula del avión</div>
+      <input class="input-field" id="inputMatricula" type="text" placeholder="Ej: XA-VOL" maxlength="12"/></div>
+    <div><div class="input-label">Nota / Pendiente</div>
+      <textarea class="input-field" id="inputTexto" placeholder="Describe el pendiente..."></textarea></div>
+    <div class="foto-upload-area">
+      <div class="input-label">Fotografías <span style="color:var(--text-muted);font-size:.63rem;">(máx. 5 · 2MB c/u)</span></div>
+      <div class="foto-previews" id="fotoPreviews"></div>
+      <div class="foto-hint" id="fotoHint">Toca + para agregar una foto</div>
+      <div class="foto-uploading" id="fotoUploading" style="display:none;">⏳ Procesando foto...</div>
+      <input type="file" id="inputFoto" accept="image/*" style="display:none;" multiple/>
+    </div>
+    <button class="btn-guardar" id="btnGuardar">Guardar nota</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="foto"/>
+</div>
+
+<!-- MODAL ADMIN LOGIN -->
+<div id="modalAdmin" class="modal-overlay">
+  <div style="font-size:1.8rem;">🔐</div>
+  <div class="modal-ol-title" style="background:linear-gradient(135deg,#ffcc44,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Acceso Administrativo</div>
+  <div class="modal-ol-sub">Contraseña de administrador</div>
+  <div style="position:relative;width:100%;max-width:280px;">
+    <input class="input-modal" id="inputAdminPass" type="password" placeholder="••••••" maxlength="20" style="width:100%;padding-right:2.8rem;"/>
+    <button onclick="togglePassVis()" style="position:absolute;right:.7rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(200,150,0,.5);font-size:1rem;" id="btnEyeToggle">👁</button>
+  </div>
+  <div class="admin-error" id="adminError">Contraseña incorrecta</div>
+  <div class="modal-btns">
+    <button class="btn-cancel" id="btnAdminCancel">Cancelar</button>
+    <button class="btn-ok" id="btnAdminOk">Entrar</button>
+  </div>
+</div>
+
+<!-- MODAL GESTIÓN USUARIOS (admin) -->
+<div id="modalUsuarios" class="modal-overlay" style="z-index:410;">
+  <div style="font-size:1.6rem;">👥</div>
+  <div class="modal-ol-title">Gestión de Usuarios</div>
+  <div class="modal-ol-sub">Solo el administrador puede editar</div>
+  <div class="user-list" id="userList"><div class="users-empty">Sin usuarios registrados</div></div>
+  <div class="user-add-row">
+    <input class="user-add-input" id="newUserNombre" type="text" placeholder="Nombre completo" maxlength="40"/>
+    <input class="user-add-input" id="newUserNumero" type="text" placeholder="# Empleado" maxlength="12" style="max-width:110px;" inputmode="text"/>
+    <select id="newUserRol" style="background:rgba(40,0,80,.5);border:1px solid rgba(180,100,255,.25);border-radius:12px;padding:.65rem .8rem;color:#e8d8ff;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;outline:none;cursor:pointer;max-width:130px;">
+      <option value="embajador">✈️ Embajador</option>
+      <option value="supervisor">👔 Supervisor</option>
+    </select>
+  </div>
+  <button class="btn-user-add" id="btnAddUser">＋ Agregar usuario</button>
+  <button class="btn-cancel" id="btnUsersClose" style="max-width:280px;width:100%;">Cerrar</button>
+</div>
+
+<!-- MODAL CONFIRMAR -->
+<div id="modalConfirm" class="modal-overlay" style="z-index:500;">
+  <div class="modal-ol-title" id="confirmTitle" style="color:#ff8888;background:none;-webkit-text-fill-color:#ff8888;">⚠️ Confirmar acción</div>
+  <div class="modal-ol-sub" id="confirmMsg">Esta acción no se puede deshacer fácilmente.</div>
+  <div class="modal-btns">
+    <button class="btn-cancel" id="btnConfirmNo">Cancelar</button>
+    <button class="btn-ok red" id="btnConfirmYes">Confirmar</button>
+  </div>
+</div>
+
+<!-- MODAL EDITAR NOMBRE (desde chip) -->
+<div id="modalPerfil" class="modal-overlay" style="z-index:420;">
+  <div style="font-size:1.8rem;">👤</div>
+  <div class="modal-ol-title">Actualizar nombre</div>
+  <div class="modal-ol-sub">Tu número de empleado no cambia</div>
+  <input class="user-add-input" id="editNombre" type="text" maxlength="40" style="width:100%;max-width:280px;font-size:.95rem;padding:.78rem 1rem;" placeholder="Nombre completo" autocomplete="name"/>
+  <div class="modal-btns">
+    <button class="btn-cancel" id="btnEditPerfilCancel">Cancelar</button>
+    <button class="btn-ok purple" id="btnEditPerfilOk">Guardar</button>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, update, remove, onValue, get, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBgxuSvpkpMJ6nGFdPV8j-Oj5RSHA7_uWM",
+  authDomain: "volaris-notas.firebaseapp.com",
+  databaseURL: "https://volaris-notas-default-rtdb.firebaseio.com",
+  projectId: "volaris-notas",
+  storageBucket: "volaris-notas.firebasestorage.app",
+  messagingSenderId: "567633663834",
+  appId: "1:567633663834:web:45ede96e8fd442ebbe4563"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ══════════════════════════
+   TEMA
+══════════════════════════ */
+const html = document.documentElement;
+let isDark = localStorage.getItem('vop_theme') !== 'light';
+function applyTheme(){
+  html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('btnTheme').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('vop_theme', isDark ? 'dark' : 'light');
+}
+applyTheme();
+document.getElementById('btnTheme').addEventListener('click', () => {
+  isDark = !isDark;
+  applyTheme();
+});
+
+/* ══════════════════════════
+   USUARIOS en Firebase
+   /volaris_users/{numero} = {nombre, numero, ts}
+══════════════════════════ */
+let usersData = {};   // {numero: {nombre, numero, ts}}
+const usersRef = ref(db, 'volaris_users');
+onValue(usersRef, snap => {
+  usersData = snap.val() || {};
+  renderUserList();
+});
+
+function userKey(numero){ return 'u_' + String(numero).replace(/\D/g,''); }
+
+async function addUser(nombre, numero, rol='embajador'){
+  const k = userKey(numero);
+  await set(ref(db, 'volaris_users/' + k), { nombre: nombre.trim(), numero: String(numero).trim(), rol, ts: Date.now() });
+}
+async function updateUserRol(k, rol){
+  await update(ref(db, 'volaris_users/' + k), { rol });
+}
+async function deleteUser(k){
+  await remove(ref(db, 'volaris_users/' + k));
+}
+function isAuthorized(numero){
+  if(String(numero).trim() === ADMIN_NUMERO) return true;
+  return Object.values(usersData).some(u => String(u.numero).trim() === String(numero).trim());
+}
+function getUserByNumero(numero){
+  return Object.values(usersData).find(u => String(u.numero).trim() === String(numero).trim()) || null;
+}
+function getRol(){
+  const p = loadPerfil();
+  if(String(p.numero).trim() === ADMIN_NUMERO) return 'admin';
+  const u = getUserByNumero(p.numero);
+  return u?.rol || 'embajador';
+}
+const puedeCrear  = () => ['admin','supervisor'].includes(getRol());
+const puedeEditar = () => ['admin','supervisor'].includes(getRol());
+const puedeBorrar = () => getRol() === 'admin';
+
+/* ══════════════════════════
+   PERFIL LOCAL
+══════════════════════════ */
+function loadPerfil(){ return { nombre: localStorage.getItem('vop_nombre')||'', numero: localStorage.getItem('vop_numero')||'' }; }
+function savePerfil(nombre, numero){ localStorage.setItem('vop_nombre', nombre); localStorage.setItem('vop_numero', numero); }
+function initials(nombre){ const p=(nombre||'').trim().split(' ').filter(Boolean); if(!p.length)return'?'; return p.length===1?p[0][0].toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); }
+function updateTopUser(){
+  const p = loadPerfil();
+  document.getElementById('topUserName').textContent = p.nombre || '–';
+  document.getElementById('topUserEmp').textContent = p.numero ? '#' + p.numero : '–';
+  document.getElementById('topUserAvatar').textContent = initials(p.nombre);
+  // Insignia de rol en topbar
+  const rol = getRol();
+  const rolLabels = {admin:'👑 Admin', supervisor:'👔 Supervisor', embajador:'✈️ Embajador'};
+  const rolColors = {admin:'rgba(200,150,0,.2)', supervisor:'rgba(85,200,255,.15)', embajador:'rgba(170,85,255,.12)'};
+  const rolTC = {admin:'#ffcc55', supervisor:'#55ccff', embajador:'#cc88ff'};
+  let rb = document.getElementById('rolBadgeTop');
+  if(!rb){ rb=document.createElement('span'); rb.id='rolBadgeTop';
+    rb.style.fontSize='.55rem';rb.style.fontWeight='900';rb.style.letterSpacing='.06em';rb.style.textTransform='uppercase';rb.style.padding='.1rem .38rem';rb.style.borderRadius='99px';rb.style.flexShrink='0';
+    document.querySelector('.top-bar').insertBefore(rb, document.getElementById('syncBadge'));
+  }
+  rb.textContent = rolLabels[rol]||rol;
+  rb.style.background = rolColors[rol]||'rgba(170,85,255,.12)';
+  rb.style.color = rolTC[rol]||'#cc88ff';
+  rb.style.border = '1px solid '+(rolTC[rol]||'#cc88ff')+'44';
+}
+
+/* ══════════════════════════
+   DEVICE
+══════════════════════════ */
+function getDeviceId(){
+  let id=localStorage.getItem('volaris_device_id');
+  if(!id){const fp=[navigator.userAgent,screen.width+'x'+screen.height,navigator.language,new Date().getTimezoneOffset()].join('|');let h=0;for(let i=0;i<fp.length;i++){h=((h<<5)-h)+fp.charCodeAt(i);h|=0;}id='dev_'+Math.abs(h).toString(36)+'_'+Math.random().toString(36).slice(2,7);localStorage.setItem('volaris_device_id',id);}
+  return id;
+}
+function getDeviceName(){
+  const ua=navigator.userAgent;
+  if(/iPhone/i.test(ua))return'📱 iPhone';if(/iPad/i.test(ua))return'📱 iPad';
+  if(/Android/i.test(ua)){const m=ua.match(/Android [^;]+; ([^)]+)\)/);return'📱 '+(m?m[1].trim().split(' ').slice(0,2).join(' '):'Android');}
+  if(/Windows/i.test(ua))return'💻 Windows';if(/Mac/i.test(ua))return'💻 Mac';
+  return'📱 Dispositivo';
+}
+const DEVICE_ID = getDeviceId();
+const DEVICE_NAME = getDeviceName();
+
+/* ══════════════════════════
+   ESTADO
+══════════════════════════ */
+const starColors=['#cc44ff','#55ccff','#ff44cc','#88ee44','#aa22ff','#3399dd','#ffaa22'];
+document.documentElement.style.setProperty('--notas-color',starColors[Math.floor(Math.random()*starColors.length)]);
+
+let globalData = {};
+let isAdmin = false;
+let expandedFolders = new Set();
+let expandedHistorial = new Set();
+const ADMIN_PASS = '2011ss';
+const ADMIN_NUMERO = 'V2771';   // tu número de empleado como admin
+
+/* ══════════════════════════
+   SYNC BADGES
+══════════════════════════ */
+function setSyncOk(){ ['syncBadge','syncBadge2'].forEach(id=>{ const b=document.getElementById(id); if(b){b.textContent='🟢 En línea';b.className='sync-indicator sync-ok';}}); }
+function setSyncOff(){ ['syncBadge','syncBadge2'].forEach(id=>{ const b=document.getElementById(id); if(b){b.textContent='🔴 Sin conexión';b.className='sync-indicator sync-off';}}); }
+
+/* ══════════════════════════
+   FIREBASE NOTAS
+══════════════════════════ */
+const dbRef = ref(db, 'volaris_notas');
+onValue(dbRef, snap => {
+  globalData = snap.val() || {};
+  setSyncOk();
+  renderFolders(document.getElementById('searchNotas').value);
+  renderGlobal();
+}, err => { console.error(err); setSyncOff(); });
+
+function matKey(mat){ return mat.replace(/[.#$/\[\] ]/g,'_'); }
+async function fbSetEntry(mat, entry){
+  const key=matKey(mat);
+  const snap=await get(ref(db,'volaris_notas/'+key));
+  if(!snap.exists()) await set(ref(db,'volaris_notas/'+key),{nombre:mat,deviceName:DEVICE_NAME,device:DEVICE_ID,ts:Date.now(),deleted:false,entries:{}});
+  await set(ref(db,'volaris_notas/'+key+'/entries/'+entry.id),entry);
+}
+async function fbUpdateEntry(mat,entryId,fields){ await update(ref(db,'volaris_notas/'+matKey(mat)+'/entries/'+entryId),fields); }
+async function fbUpdateMat(mat,fields){ await update(ref(db,'volaris_notas/'+matKey(mat)),fields); }
+function getEntries(md){ const e=md.entries||{}; if(Array.isArray(e)){const o={};e.forEach(en=>{if(en?.id)o[en.id]=en;});return o;} return e; }
+function findMatKey(nombre){ return Object.keys(globalData).find(k=>globalData[k]?.nombre===nombre||k===matKey(nombre))||matKey(nombre); }
+
+/* ══════════════════════════
+   HISTORIAL
+══════════════════════════ */
+function buildHistorialLog(entry){
+  const log=entry.history||[];
+  if(!log.length&&entry.ts){
+    const base=[{ts:entry.ts,action:'crea',userName:entry.createdByName||entry.deviceName||'?',userNum:entry.createdByNum||''}];
+    if(entry.done&&entry.closedTs) base.push({ts:entry.closedTs,action:'cierra',userName:entry.closedByName||'?',userNum:entry.closedByNum||''});
+    return base;
+  }
+  return log;
+}
+function actionLabel(a){ if(a==='crea')return{dot:'crea',text:'Creó la nota'};if(a==='cierra')return{dot:'cierra',text:'Marcó como ✓ Hecho'};if(a==='reabre')return{dot:'reabre',text:'Reabrió como ⏳ Pendiente'};if(a==='edita')return{dot:'edita',text:'Editó la nota'};return{dot:'crea',text:a}; }
+function fmtTs(ts){ return new Date(ts).toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+
+/* ══════════════════════════
+   CONFIRM
+══════════════════════════ */
+let confirmCb=null;
+function showConfirm(title,msg,cb){ confirmCb=cb; document.getElementById('confirmTitle').textContent=title; document.getElementById('confirmMsg').textContent=msg; document.getElementById('modalConfirm').classList.add('show'); }
+document.getElementById('btnConfirmNo').addEventListener('click',()=>{ document.getElementById('modalConfirm').classList.remove('show');confirmCb=null; });
+document.getElementById('btnConfirmYes').addEventListener('click',()=>{ document.getElementById('modalConfirm').classList.remove('show'); if(confirmCb){confirmCb();confirmCb=null;} });
+
+/* ══════════════════════════
+   FOTOS
+══════════════════════════ */
+const MAX_FOTOS=5, MAX_FOTO_BYTES=2*1024*1024;
+let pendingFotos=[];
+function renderFotoPreviews(){
+  const c=document.getElementById('fotoPreviews'); c.innerHTML='';
+  pendingFotos.forEach((f,i)=>{ const w=document.createElement('div');w.className='foto-preview-wrap';const img=document.createElement('img');img.src=f.dataUrl;const rm=document.createElement('button');rm.className='foto-preview-remove';rm.textContent='✕';rm.onclick=()=>{pendingFotos.splice(i,1);renderFotoPreviews();};w.appendChild(img);w.appendChild(rm);c.appendChild(w); });
+  if(pendingFotos.length<MAX_FOTOS){const b=document.createElement('button');b.className='btn-foto-add';b.textContent='📷';b.type='button';b.onclick=()=>document.getElementById('inputFoto').click();c.appendChild(b);}
+  document.getElementById('fotoHint').style.display=pendingFotos.length===0?'block':'none';
+}
+function compressImage(file,maxW=1200,quality=.75){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(w>maxW){h=Math.round(h*maxW/w);w=maxW;} const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);const d=c.toDataURL('image/jpeg',quality); if(d.length>500*1024*1.37){const c2=document.createElement('canvas');c2.width=w;c2.height=h;c2.getContext('2d').drawImage(img,0,0,w,h);res(c2.toDataURL('image/jpeg',.5));}else{res(d);}};img.onerror=rej;img.src=e.target.result;};r.onerror=rej;r.readAsDataURL(file); });
+}
+document.getElementById('inputFoto').addEventListener('change',async e=>{ const files=[...e.target.files];e.target.value='';const av=MAX_FOTOS-pendingFotos.length;const tp=files.slice(0,av);if(!tp.length)return;document.getElementById('fotoUploading').style.display='block';for(const f of tp){if(f.size>MAX_FOTO_BYTES*3){alert('Foto demasiado grande (máx. 6MB original)');continue;}try{const d=await compressImage(f);pendingFotos.push({dataUrl:d,name:f.name});}catch(err){console.error(err);}}document.getElementById('fotoUploading').style.display='none';renderFotoPreviews(); });
+function buildFotoThumbs(fotos){ if(!fotos?.length)return null; const w=document.createElement('div');w.className='nota-fotos'; fotos.forEach(src=>{if(!src)return;const img=document.createElement('img');img.className='nota-foto-thumb';img.src=src;img.alt='foto';img.onclick=(()=>{const s=src;return()=>openLightbox(s);})();w.appendChild(img);});return w.children.length?w:null; }
+
+/* ══════════════════════════
+   MODAL NOTA
+══════════════════════════ */
+let modalMode='new', modalMat='', modalEditEntryId='';
+function openModal(mode='new',mat='',entryId='',textoActual=''){
+  modalMode=mode;modalMat=mat;modalEditEntryId=entryId;pendingFotos=[];renderFotoPreviews();
+  const mi=document.getElementById('inputMatricula');
+  if(mode==='edit'){document.getElementById('modalTitleText').textContent='✏️ Editar → '+mat;mi.value=mat;mi.disabled=true;document.getElementById('inputTexto').value=textoActual||'';document.getElementById('btnGuardar').textContent='Guardar cambios';}
+  else{document.getElementById('modalTitleText').textContent=mode==='add'?'Agregar nota → '+mat:'Nueva Nota';mi.value=mode==='add'?mat:'';mi.disabled=mode==='add';document.getElementById('inputTexto').value='';document.getElementById('btnGuardar').textContent='Guardar nota';}
+  document.getElementById('modalNota').classList.add('show');
+  setTimeout(()=>document.getElementById('inputTexto').focus(),400);
+}
+window.openModal=openModal;
+function closeModal(){ document.getElementById('modalNota').classList.remove('show');document.getElementById('inputMatricula').disabled=false;modalEditEntryId='';pendingFotos=[];renderFotoPreviews(); }
+document.getElementById('btnModalCancel').addEventListener('click',closeModal);
+document.getElementById('btnGuardar').addEventListener('click',async()=>{
+  const mat=modalMode==='add'||modalMode==='edit'?modalMat:document.getElementById('inputMatricula').value.trim().toUpperCase();
+  const texto=document.getElementById('inputTexto').value.trim();
+  if(!mat||!texto)return;
+  const btn=document.getElementById('btnGuardar');btn.disabled=true;btn.textContent='Guardando...';
+  const perfil=loadPerfil();
+  try{
+    if(modalMode==='edit'){
+      const fields={texto};
+      if(pendingFotos.length>0){const k=findMatKey(mat);const ex=(globalData[k]?.entries?.[modalEditEntryId]?.fotos)||[];const all=[...ex,...pendingFotos.map(f=>f.dataUrl)].slice(0,MAX_FOTOS);fields.fotos=all;}
+      const k=findMatKey(mat);const exH=(globalData[k]?.entries?.[modalEditEntryId]?.history)||[];
+      fields.history=[...exH,{ts:Date.now(),action:'edita',userName:perfil.nombre||DEVICE_NAME,userNum:perfil.numero||''}];
+      await fbUpdateEntry(mat,modalEditEntryId,fields);closeModal();return;
+    }
+    const ts=Date.now();
+    const entry={id:'e_'+ts+'_'+Math.random().toString(36).slice(2,5),texto,device:DEVICE_ID,deviceName:DEVICE_NAME,ts,done:false,deleted:false,fotos:pendingFotos.map(f=>f.dataUrl),createdByName:perfil.nombre||DEVICE_NAME,createdByNum:perfil.numero||'',history:[{ts,action:'crea',userName:perfil.nombre||DEVICE_NAME,userNum:perfil.numero||''}]};
+    await fbSetEntry(mat,entry);
+    // — Notificación Telegram —
+    const quien2=(perfil.nombre||DEVICE_NAME)+(perfil.numero?' #'+perfil.numero:'');
+    const hora2=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    const fecha2=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+    tgNotify(`🆕 <b>Nueva tarea creada</b>\n✈️ Matrícula: <b>${mat}</b>\n📝 ${texto}\n👤 Por: ${quien2}\n🕐 ${fecha2} · ${hora2}`);
+    closeModal();
+  }finally{btn.disabled=false;btn.textContent=modalMode==='edit'?'Guardar cambios':'Guardar nota';}
+});
+
+/* ── Lightbox ── */
+window.openLightbox=src=>{document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('show');};
+window.closeLightbox=()=>{document.getElementById('lightbox').classList.remove('show');document.getElementById('lightboxImg').src='';};
+document.getElementById('lightbox').addEventListener('click',e=>{if(e.target===document.getElementById('lightbox'))closeLightbox();});
+
+/* ══════════════════════════
+   RENDER CARPETAS
+══════════════════════════ */
+function renderFolders(filter=''){
+  const list=document.getElementById('folderList'),vacio=document.getElementById('notasVacio');
+  list.innerHTML='';
+  const q=filter.trim().toUpperCase();
+  let keys=Object.keys(globalData).filter(k=>!globalData[k]?.deleted);
+  if(q)keys=keys.filter(k=>{const n=(globalData[k]?.nombre||k).toUpperCase();return n.includes(q)||k.toUpperCase().includes(q);});
+  if(!keys.length){vacio.style.display='flex';list.style.display='none';return;}
+  vacio.style.display='none';list.style.display='flex';
+  keys.sort((a,b)=>(globalData[a]?.nombre||a).localeCompare(globalData[b]?.nombre||b));
+  keys.forEach(k=>{
+    const md=globalData[k],nombre=md?.nombre||k;
+    const allE=Object.values(getEntries(md)).filter(e=>!e.deleted);
+    const pending=allE.filter(e=>!e.done),done=allE.filter(e=>e.done);
+    const isExp=expandedFolders.has(k);
+    const folder=document.createElement('div');folder.className='folder-item'+(isExp?' expanded':'');
+    const hdr=document.createElement('div');hdr.className='folder-header';
+    hdr.innerHTML=`<span class="folder-icon">›</span><span class="folder-mat">${nombre}</span>${pending.length?`<span class="folder-count" style="background:rgba(255,150,50,.15);color:#ffaa55;">${pending.length} pend.</span>`:''}${done.length?`<span class="folder-count" style="background:rgba(60,200,80,.1);color:#55ee88;">${done.length} hechos</span>`:''} ${isAdmin?`<button onclick="event.stopPropagation();confirmDeleteMat('${nombre}')" style="padding:.18rem .48rem;border:none;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.6rem;font-weight:900;text-transform:uppercase;background:rgba(200,34,68,.18);color:#ff7799;border:1px solid rgba(200,34,68,.25);">🗑</button>`:''}`;
+    hdr.addEventListener('click',()=>{if(expandedFolders.has(k))expandedFolders.delete(k);else expandedFolders.add(k);renderFolders(document.getElementById('searchNotas').value);});
+    folder.appendChild(hdr);
+    const body=document.createElement('div');body.className='folder-body';
+    if(!allE.length){body.innerHTML='<div style="padding:.6rem 1rem;font-size:.75rem;font-weight:700;color:rgba(180,130,255,.35);text-align:center;letter-spacing:.08em;text-transform:uppercase;">Sin notas</div>';}
+    else{
+      [...pending,...done].forEach(entry=>{
+        const histKey=k+'_'+entry.id,isHistOpen=expandedHistorial.has(histKey),log=buildHistorialLog(entry);
+        const div=document.createElement('div');div.className='nota-personal'+(entry.done?' done-entry':'');
+        const nt=document.createElement('div');nt.className='nota-personal-text';nt.style.cssText=entry.done?'text-decoration:line-through;opacity:.5;':'';nt.textContent=entry.texto;div.appendChild(nt);
+        const ft=buildFotoThumbs(entry.fotos);if(ft)div.appendChild(ft);
+        const who=document.createElement('div');who.className='nota-who';
+        const cp=entry.createdByName||(entry.history?.[0]?.userName)||entry.deviceName||'?';
+        const cn=entry.createdByNum||(entry.history?.[0]?.userNum)||'';
+        who.innerHTML=`<span class="nota-who-badge badge-crea">✏ ${cp}${cn?' #'+cn:''}</span>`;
+        if(entry.done){const lc=log.filter(l=>l.action==='cierra').pop();if(lc)who.innerHTML+=`<span class="nota-who-badge badge-cierra">✓ ${lc.userName}${lc.userNum?' #'+lc.userNum:''}</span>`;}
+        const fs=document.createElement('span');fs.className='nota-personal-date';fs.textContent=fmtTs(entry.ts);who.appendChild(fs);div.appendChild(who);
+        const act=document.createElement('div');act.style.cssText='display:flex;align-items:center;gap:.42rem;flex-wrap:wrap;';
+        const tb=document.createElement('button');tb.className='btn-toggle-done '+(entry.done?'done':'pending');tb.textContent=entry.done?'✓ Hecho':'⏳ Pendiente';tb.onclick=()=>toggleDone(nombre,entry.id);act.appendChild(tb);
+        if(puedeEditar()){const eb=document.createElement('button');eb.className='btn-admin-act';eb.style.cssText='background:rgba(85,170,255,.12);color:#88ccff;border:1px solid rgba(85,170,255,.22);';eb.textContent='✏️';eb.onclick=(()=>{const _n=nombre,_id=entry.id,_t=entry.texto;return()=>openModal('edit',_n,_id,_t);})();act.appendChild(eb);}
+        if(puedeBorrar()){const db2=document.createElement('button');db2.className='btn-admin-act del';db2.textContent='🗑';db2.onclick=(()=>{const _n=nombre,_id=entry.id;return()=>confirmDeleteEntry(_n,_id);})();act.appendChild(db2);}
+        const hb=document.createElement('button');hb.className='btn-historial';hb.textContent='📜 ('+log.length+')';hb.onclick=()=>{if(expandedHistorial.has(histKey))expandedHistorial.delete(histKey);else expandedHistorial.add(histKey);renderFolders(document.getElementById('searchNotas').value);};act.appendChild(hb);
+        div.appendChild(act);
+        if(isHistOpen&&log.length){const hw=document.createElement('div');hw.className='historial-wrap';log.forEach(item=>{const {dot,text}=actionLabel(item.action);const r=document.createElement('div');r.className='historial-row';r.innerHTML=`<span class="historial-dot ${dot}"></span><span class="historial-text"><strong>${item.userName}${item.userNum?' <span style="opacity:.5">#'+item.userNum+'</span>':''}</strong> — ${text}</span><span class="historial-time">${fmtTs(item.ts)}</span>`;hw.appendChild(r);});div.appendChild(hw);}
+        body.appendChild(div);
+      });
+    }
+    if(puedeCrear()){const ab=document.createElement('button');ab.className='btn-add-personal';ab.innerHTML='＋ Agregar nota';ab.onclick=()=>openModal('add',nombre);body.appendChild(ab);}
+    folder.appendChild(body);list.appendChild(folder);
+  });
+}
+
+/* ══════════════════════════
+   RENDER GLOBAL
+══════════════════════════ */
+function renderGlobal(){
+  const container=document.getElementById('globalList');container.innerHTML='';
+  const keys=Object.keys(globalData).filter(k=>isAdmin||!globalData[k]?.deleted);
+  const statsBar=document.getElementById('globalStatsBar');
+  if(statsBar){
+    const ae=keys.flatMap(k=>Object.values(getEntries(globalData[k])).filter(e=>!e.deleted));
+    const tp=ae.filter(e=>!e.done).length,td=ae.filter(e=>e.done).length;
+    if(keys.length){statsBar.style.display='flex';document.getElementById('gStatMats').textContent='✈ '+keys.length+' matrícula'+(keys.length!==1?'s':'');document.getElementById('gStatPend').textContent='⏳ '+tp+' pendiente'+(tp!==1?'s':'');document.getElementById('gStatDone').textContent='✓ '+td+' hecho'+(td!==1?'s':'');}
+    else statsBar.style.display='none';
+  }
+  if(!keys.length){container.innerHTML='<div class="global-empty-msg"><div class="vacio-icon">🌐</div><p>Sin notas globales aún</p></div>';return;}
+  keys.sort((a,b)=>{const ad=globalData[a]?.deleted?1:0,bd=globalData[b]?.deleted?1:0;if(ad!==bd)return ad-bd;return(globalData[a]?.nombre||a).localeCompare(globalData[b]?.nombre||b);});
+  keys.forEach(k=>{
+    const md=globalData[k],isDel=md?.deleted,nombre=md?.nombre||k;
+    const allE=Object.values(getEntries(md)),activeE=allE.filter(e=>!e.deleted);
+    const devShort=(md?.deviceName||'').replace(/[📱💻]/g,'').trim();
+    const block=document.createElement('div');block.className='mat-block'+(isDel?' mat-deleted':'');
+    const hdr=document.createElement('div');hdr.className='mat-header';
+    hdr.innerHTML=`<span class="mat-plane">✈</span><span class="mat-name">${nombre}</span><span class="mat-device-badge">${devShort}</span><span class="mat-count">${activeE.length} nota${activeE.length!==1?'s':''}</span>${isAdmin?(!isDel?`<button class="mat-admin-btn del" onclick="confirmDeleteMat('${nombre}')">🗑 Notas</button><button class="mat-admin-btn del-all" onclick="confirmDeleteAll('${nombre}')">🗑 Todo</button>`:`<button class="mat-admin-btn undo" onclick="undoMat('${nombre}')">↩ Restaurar</button>`):''}`;
+    block.appendChild(hdr);
+    const nw=document.createElement('div');nw.className='mat-notas';
+    const visE=allE.filter(e=>isAdmin||!e.deleted).sort((a,b)=>a.ts-b.ts);
+    if(!visE.length){nw.innerHTML='<div class="mat-notas-empty">Sin notas</div>';}
+    else{
+      visE.forEach(entry=>{
+        const ef=fmtTs(entry.ts),log=buildHistorialLog(entry);
+        const histKeyG='G_'+k+'_'+entry.id,isHistOpenG=expandedHistorial.has(histKeyG);
+        const row=document.createElement('div');row.className='nota-row-wrap';
+        const entEl=document.createElement('div');entEl.className='nota-entry'+(entry.done&&!entry.deleted?' done-entry':'');
+        const cp=entry.createdByName||entry.deviceName||'?',cn=entry.createdByNum||'';
+        const eh=document.createElement('div');eh.className='nota-entry-header';eh.innerHTML=`<span class="entry-device">✏ ${cp}${cn?' #'+cn:''}</span><span class="entry-fecha">${ef}</span>`;entEl.appendChild(eh);
+        const td2=document.createElement('div');td2.className='entry-texto';if(entry.deleted){td2.style.cssText='opacity:.3;font-style:italic;font-size:.8rem;';td2.textContent='— eliminada por admin —';}else{td2.textContent=entry.texto||'';}entEl.appendChild(td2);
+        if(!entry.deleted){const ft2=buildFotoThumbs(entry.fotos);if(ft2)entEl.appendChild(ft2);}
+        if(entry.done&&!entry.deleted){const lc=log.filter(l=>l.action==='cierra').pop();if(lc){const ce=document.createElement('div');ce.style.cssText='font-size:.58rem;font-weight:800;color:rgba(85,238,136,.6);letter-spacing:.06em;';ce.textContent=`✓ ${lc.userName}${lc.userNum?' #'+lc.userNum:''} · ${fmtTs(lc.ts)}`;entEl.appendChild(ce);}}
+        const ar=document.createElement('div');ar.style.cssText='display:flex;gap:.42rem;align-items:center;flex-wrap:wrap;';
+        if(!entry.deleted&&!isDel){
+          const tb=document.createElement('button');tb.className='btn-toggle-done '+(entry.done?'done':'pending');tb.textContent=entry.done?'✓ Hecho':'⏳ Pendiente';tb.onclick=(()=>{const _n=nombre,_id=entry.id;return()=>toggleDone(_n,_id);})();ar.appendChild(tb);
+          if(puedeEditar()){const eb=document.createElement('button');eb.className='btn-admin-act';eb.style.cssText='background:rgba(85,170,255,.12);color:#88ccff;border:1px solid rgba(85,170,255,.22);';eb.textContent='✏️';eb.onclick=(()=>{const _n=nombre,_id=entry.id,_t=entry.texto;return()=>openModal('edit',_n,_id,_t);})();ar.appendChild(eb);}
+        }
+        if(isAdmin){const ab2=document.createElement('button');if(entry.deleted){ab2.className='btn-admin-act undo';ab2.textContent='↩';ab2.onclick=(()=>{const _n=nombre,_id=entry.id;return()=>undoEntry(_n,_id);})();}else{ab2.className='btn-admin-act del';ab2.textContent='🗑';ab2.onclick=(()=>{const _n=nombre,_id=entry.id;return()=>confirmDeleteEntry(_n,_id);})();}ar.appendChild(ab2);}
+        if(log.length){const hb=document.createElement('button');hb.className='btn-historial';hb.textContent='📜 ('+log.length+')';hb.onclick=()=>{if(expandedHistorial.has(histKeyG))expandedHistorial.delete(histKeyG);else expandedHistorial.add(histKeyG);renderGlobal();};ar.appendChild(hb);}
+        entEl.appendChild(ar);
+        if(isHistOpenG&&log.length){const hw=document.createElement('div');hw.className='historial-wrap';log.forEach(item=>{const {dot,text}=actionLabel(item.action);const r=document.createElement('div');r.className='historial-row';r.innerHTML=`<span class="historial-dot ${dot}"></span><span class="historial-text"><strong>${item.userName}${item.userNum?' <span style="opacity:.5">#'+item.userNum+'</span>':''}</strong> — ${text}</span><span class="historial-time">${fmtTs(item.ts)}</span>`;hw.appendChild(r);});entEl.appendChild(hw);}
+        row.appendChild(entEl);nw.appendChild(row);
+      });
+    }
+    block.appendChild(nw);
+    if(!isDel&&puedeCrear()){const ab=document.createElement('button');ab.className='btn-add-to-mat';ab.innerHTML='＋ Agregar nota';ab.onclick=()=>openModal('add',nombre);block.appendChild(ab);}
+    container.appendChild(block);
+  });
+  isAdmin?container.classList.add('admin-mode-global'):container.classList.remove('admin-mode-global');
+}
+
+/* ══════════════════════════
+   TELEGRAM BOT
+══════════════════════════ */
+const TG_TOKEN = '8403423771:AAEa9YXbjwfrdyEfIAJpNioipdD-CkE2j9o';
+const TG_CHAT  = '-5130086243';
+
+async function tgNotify(msg){
+  try{
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT, text:msg, parse_mode:'HTML'})
+    });
+  }catch(e){ console.warn('Telegram no disponible:',e); }
+}
+
+function tgMsgToggle(newDone, nombre, textoNota, perfil){
+  const quien = (perfil.nombre||DEVICE_NAME) + (perfil.numero?' #'+perfil.numero:'');
+  const hora   = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const fecha  = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+  if(newDone){
+    return `✅ <b>Tarea completada</b>\n`+
+           `✈️ Matrícula: <b>${nombre}</b>\n`+
+           `📝 ${textoNota}\n`+
+           `👤 Por: ${quien}\n`+
+           `🕐 ${fecha} · ${hora}`;
+  } else {
+    return `🔄 <b>Tarea reabierta</b>\n`+
+           `✈️ Matrícula: <b>${nombre}</b>\n`+
+           `📝 ${textoNota}\n`+
+           `👤 Por: ${quien}\n`+
+           `🕐 ${fecha} · ${hora}`;
+  }
+}
+
+/* ══════════════════════════
+   ACCIONES
+══════════════════════════ */
+window.toggleDone=async(nombre,entryId)=>{
+  const k=findMatKey(nombre),entry=globalData[k]?.entries?.[entryId];
+  const newDone=entry?!entry.done:true;
+  const perfil=loadPerfil();
+  const hi={ts:Date.now(),action:newDone?'cierra':'reabre',userName:perfil.nombre||DEVICE_NAME,userNum:perfil.numero||''};
+  const exH=entry?.history||[];
+  const fields={done:newDone,history:[...exH,hi]};
+  if(newDone){fields.closedByName=perfil.nombre||DEVICE_NAME;fields.closedByNum=perfil.numero||'';fields.closedTs=Date.now();}
+  await fbUpdateEntry(nombre,entryId,fields);
+  // — Notificación Telegram —
+  const msg = tgMsgToggle(newDone, nombre, entry?.texto||'', perfil);
+  tgNotify(msg);
+};
+window.undoMat=async n=>{if(isAdmin)await fbUpdateMat(n,{deleted:false});};
+window.undoEntry=async(n,id)=>{if(isAdmin)await fbUpdateEntry(n,id,{deleted:false});};
+window.confirmDeleteMat=n=>showConfirm('⚠️ Borrar notas','¿Borrar todas las notas de '+n+'?',async()=>{if(!isAdmin)return;const k=findMatKey(n);const md=globalData[k];if(!md?.entries)return;const u={};Object.keys(getEntries(md)).forEach(eid=>{u[eid+'/deleted']=true;});await update(ref(db,'volaris_notas/'+k+'/entries'),u);});
+window.confirmDeleteAll=n=>showConfirm('🗑 Borrar matrícula','Elimina '+n+' y todas sus notas. ¿Continuar?',async()=>{if(isAdmin)await fbUpdateMat(n,{deleted:true});});
+window.confirmDeleteEntry=(n,id)=>showConfirm('🗑 Borrar nota','¿Eliminar esta nota?',async()=>{if(isAdmin)await fbUpdateEntry(n,id,{deleted:true});});
+
+/* ══════════════════════════
+   ADMIN
+══════════════════════════ */
+document.getElementById('btnAdminPencil').addEventListener('click',()=>{
+  if(isAdmin){
+    isAdmin=false;document.getElementById('btnAdminPencil').classList.remove('admin-on');document.getElementById('adminBadge').classList.remove('show');
+    renderGlobal();renderFolders(document.getElementById('searchNotas').value);
+  } else {
+    document.getElementById('inputAdminPass').value='';document.getElementById('adminError').classList.remove('show');
+    document.getElementById('modalAdmin').classList.add('show');
+    setTimeout(()=>document.getElementById('inputAdminPass').focus(),300);
+  }
+});
+document.getElementById('btnAdminCancel').addEventListener('click',()=>document.getElementById('modalAdmin').classList.remove('show'));
+function checkAdmin(){
+  if(document.getElementById('inputAdminPass').value===ADMIN_PASS){
+    isAdmin=true;document.getElementById('modalAdmin').classList.remove('show');
+    document.getElementById('btnAdminPencil').classList.add('admin-on');document.getElementById('adminBadge').classList.add('show');
+    document.getElementById('btnAdminPencil').title='Admin activo — toca para desactivar';
+    renderGlobal();renderFolders(document.getElementById('searchNotas').value);
+  } else { document.getElementById('adminError').classList.add('show');document.getElementById('inputAdminPass').value=''; }
+}
+document.getElementById('btnAdminOk').addEventListener('click',checkAdmin);
+document.getElementById('inputAdminPass').addEventListener('keydown',e=>{if(e.key==='Enter')checkAdmin();});
+window.togglePassVis=()=>{ const i=document.getElementById('inputAdminPass');i.type=i.type==='password'?'text':'password';document.getElementById('btnEyeToggle').textContent=i.type==='password'?'👁':'🙈'; };
+
+/* ══════════════════════════
+   GESTIÓN USUARIOS (admin)
+══════════════════════════ */
+function renderUserList(){
+  const ul=document.getElementById('userList');
+  if(!ul)return;
+  ul.innerHTML='';
+  const entries=Object.entries(usersData);
+  if(!entries.length){ul.innerHTML='<div class="users-empty">Sin usuarios registrados</div>';return;}
+  const ROL_LABELS={'supervisor':'👔 Supervisor','embajador':'✈️ Embajador'};
+  const ROL_COLORS={'supervisor':'rgba(85,200,255,.15)','embajador':'rgba(170,85,255,.12)'};
+  const ROL_TC={'supervisor':'#55ccff','embajador':'#cc88ff'};
+  entries.sort((a,b)=>(a[1].nombre||'').localeCompare(b[1].nombre||'')).forEach(([k,u])=>{
+    const rol=u.rol||'embajador';
+    const row=document.createElement('div');row.className='user-row';
+    row.style.cssText='flex-wrap:wrap;gap:.4rem;';
+    row.innerHTML=`<div style="flex:1;min-width:120px"><div class="user-row-name">${u.nombre||'–'}</div><div class="user-row-num">#${u.numero||'–'}</div></div>
+      <span style="padding:.15rem .5rem;border-radius:99px;font-size:.6rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:${ROL_COLORS[rol]};color:${ROL_TC[rol]};border:1px solid ${ROL_TC[rol]}33">${ROL_LABELS[rol]||rol}</span>`;
+    // Botón cambiar rol
+    const rb=document.createElement('button');
+    rb.style.cssText='padding:.18rem .48rem;border:none;border-radius:99px;cursor:pointer;font-size:.6rem;font-weight:900;text-transform:uppercase;background:rgba(200,150,0,.15);color:#ffcc55;border:1px solid rgba(200,150,0,.25);';
+    rb.textContent=rol==='supervisor'?'→ Embajador':'→ Supervisor';
+    rb.onclick=()=>{ const nr=rol==='supervisor'?'embajador':'supervisor'; updateUserRol(k,nr); };
+    const del=document.createElement('button');del.className='user-row-del';del.textContent='🗑';
+    del.onclick=()=>showConfirm('🗑 Quitar usuario','¿Quitar acceso a '+u.nombre+'?',()=>deleteUser(k));
+    row.appendChild(rb);row.appendChild(del);ul.appendChild(row);
+  });
+}
+window.openUserManager=()=>{
+  renderUserList();
+  document.getElementById('newUserNombre').value='';
+  document.getElementById('newUserNumero').value='';
+  document.getElementById('newUserRol').value='embajador';
+  document.getElementById('modalUsuarios').classList.add('show');
+};
+document.getElementById('btnUsersClose').addEventListener('click',()=>document.getElementById('modalUsuarios').classList.remove('show'));
+document.getElementById('btnAddUser').addEventListener('click',async()=>{
+  const nombre=document.getElementById('newUserNombre').value.trim();
+  const numero=document.getElementById('newUserNumero').value.trim();
+  const rol=document.getElementById('newUserRol').value||'embajador';
+  if(!nombre||!numero)return;
+  await addUser(nombre,numero,rol);
+  document.getElementById('newUserNombre').value='';
+  document.getElementById('newUserNumero').value='';
+  document.getElementById('newUserRol').value='embajador';
+});
+
+// Botón usuarios visible solo en modo admin — inyectado dinámicamente
+function updateAdminUIExtras(){
+  let btn=document.getElementById('btnUserManager');
+  if(isAdmin&&!btn){
+    btn=document.createElement('button');
+    btn.id='btnUserManager';
+    btn.textContent='👥 Usuarios';
+    btn.style.cssText='background:linear-gradient(135deg,rgba(200,150,0,.15),rgba(200,150,0,.1));border:1px solid rgba(200,150,0,.3);border-radius:99px;padding:.22rem .65rem;cursor:pointer;font-size:.6rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#ffcc55;flex-shrink:0;transition:background .15s;';
+    btn.onclick=()=>window.openUserManager();
+    document.querySelector('.top-bar').insertBefore(btn,document.getElementById('adminBadge'));
+  } else if(!isAdmin&&btn){ btn.remove(); }
+}
+
+// Sobreescribir checkAdmin para incluir UI extras
+const _origCheckAdmin=checkAdmin;
+document.getElementById('btnAdminOk').removeEventListener('click',checkAdmin);
+function checkAdminFull(){
+  if(document.getElementById('inputAdminPass').value===ADMIN_PASS){
+    isAdmin=true;document.getElementById('modalAdmin').classList.remove('show');
+    document.getElementById('btnAdminPencil').classList.add('admin-on');document.getElementById('adminBadge').classList.add('show');
+    updateAdminUIExtras();renderGlobal();renderFolders(document.getElementById('searchNotas').value);
+  } else { document.getElementById('adminError').classList.add('show');document.getElementById('inputAdminPass').value=''; }
+}
+document.getElementById('btnAdminOk').addEventListener('click',checkAdminFull);
+document.getElementById('inputAdminPass').addEventListener('keydown',e=>{if(e.key==='Enter')checkAdminFull();});
+document.getElementById('btnAdminPencil').addEventListener('click',()=>{ setTimeout(()=>{if(!isAdmin)updateAdminUIExtras();},10); });
+
+/* ══════════════════════════
+   SECCIONES SHOW/HIDE
+══════════════════════════ */
+window.showSection=(name)=>{
+  const el=document.getElementById('section'+name);
+  el.style.display='block';
+  el.style.animation='none';
+  requestAnimationFrame(()=>{ el.style.animation='secFadeIn .35s cubic-bezier(.22,1,.36,1) both'; });
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),60);
+  if(name==='Notas'){ renderFolders(document.getElementById('searchNotas').value); document.getElementById('btnNuevaNota').style.display='flex'; }
+  if(name==='Global') renderGlobal();
+};
+window.closeSection=(name)=>{
+  document.getElementById('section'+name).style.display='none';
+  if(name==='Notas') document.getElementById('btnNuevaNota').style.display='none';
+  document.getElementById('sectionInicio').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+/* ══════════════════════════
+   TUTORIAL
+══════════════════════════ */
+window.openTutScreen=()=>{ document.getElementById('portal').style.display='none'; document.getElementById('tutScreen').classList.add('show'); };
+window.closeTutScreen=()=>{ document.getElementById('tutScreen').classList.remove('show'); document.getElementById('portal').style.display='flex'; };
+
+/* ══════════════════════════
+   EDITAR NOMBRE DESDE CHIP
+══════════════════════════ */
+window.openEditPerfil=()=>{
+  const p=loadPerfil();
+  document.getElementById('editNombre').value=p.nombre;
+  document.getElementById('modalPerfil').classList.add('show');
+  setTimeout(()=>document.getElementById('editNombre').focus(),200);
+};
+document.getElementById('btnEditPerfilCancel').addEventListener('click',()=>document.getElementById('modalPerfil').classList.remove('show'));
+document.getElementById('btnEditPerfilOk').addEventListener('click',()=>{
+  const nombre=document.getElementById('editNombre').value.trim();
+  if(!nombre)return;
+  const p=loadPerfil();
+  savePerfil(nombre,p.numero);
+  updateTopUser();
+  document.getElementById('modalPerfil').classList.remove('show');
+});
+
+/* ══════════════════════════
+   BUSCADOR
+══════════════════════════ */
+document.getElementById('searchNotas').addEventListener('input',e=>renderFolders(e.target.value));
+
+/* ══════════════════════════
+   LOGIN con número de empleado
+══════════════════════════ */
+const loginInput=document.getElementById('loginNumero');
+const btnLogin=document.getElementById('btnLogin');
+loginInput.addEventListener('input',()=>{ btnLogin.disabled=!loginInput.value.trim(); document.getElementById('loginError').classList.remove('show'); });
+loginInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!btnLogin.disabled)btnLogin.click(); });
+btnLogin.addEventListener('click',()=>{
+  const numero=loginInput.value.trim();
+  if(!isAuthorized(numero)){document.getElementById('loginError').classList.add('show');return;}
+  // Buscar nombre del usuario
+  const u=getUserByNumero(numero);
+  const nombre=u?.nombre||'';
+  savePerfil(nombre,numero);
+  updateTopUser();
+  document.getElementById('loginScreen').classList.remove('show');
+  document.getElementById('portal').classList.add('show');
+  renderFolders('');renderGlobal();
+});
+
+/* ══════════════════════════
+   ENTRAR DESDE SPLASH
+══════════════════════════ */
+document.getElementById('btnEnter').addEventListener('click',()=>{
+  document.getElementById('hero').classList.add('exit-up');
+  document.getElementById('divider').classList.add('exit-close');
+  document.getElementById('enterWrap').classList.add('exit-down');
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    const p=loadPerfil();
+    // Si ya tiene número guardado y está autorizado, entrar directo
+    if(p.numero&&isAuthorized(p.numero)){
+      updateTopUser();
+      document.getElementById('portal').classList.add('show');
+      renderFolders('');renderGlobal();
+    } else {
+      document.getElementById('loginScreen').classList.add('show');
+      setTimeout(()=>loginInput.focus(),300);
+    }
+  },480);
+});
+
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('SW registrado'))
+      .catch(e => console.warn('SW error:', e));
+  });
+}
+</script>
+</body>
+</html>
