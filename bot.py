@@ -267,6 +267,75 @@ async def nuevo_miembro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(msg, parse_mode="Markdown")
 
+# ─── /borrar_boletin ─────────────────────────────────────────────────────────
+async def borrar_boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_supervisor(update.effective_user.id):
+        await update.message.reply_text("❌ Solo supervisores.")
+        return
+    data = load_data()
+    if not data["boletines"]:
+        await update.message.reply_text("No hay boletines registrados.")
+        return
+    if not ctx.args:
+        lista = "\n".join([f"  *#{b['id']}* — {b['texto'][:40]}..." for b in data["boletines"]])
+        await update.message.reply_text(
+            f"📢 *Boletines existentes:*\n\n{lista}\n\nUso: `/borrar_boletin <numero>`\nEjemplo: `/borrar_boletin 1`",
+            parse_mode="Markdown"
+        )
+        return
+    try:
+        num = int(ctx.args[0])
+    except ValueError:
+        await update.message.reply_text("Uso: /borrar_boletin <numero>\nEjemplo: /borrar_boletin 1")
+        return
+    antes = len(data["boletines"])
+    data["boletines"] = [b for b in data["boletines"] if b["id"] != num]
+    if len(data["boletines"]) == antes:
+        await update.message.reply_text(f"❌ No encontré el boletín #{num}.")
+        return
+    save_data(data)
+    await update.message.reply_text(f"✅ Boletín #{num} eliminado del registro.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente si aún aparece._", parse_mode="Markdown")
+
+# ─── /borrar_curso ────────────────────────────────────────────────────────────
+async def borrar_curso(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    if not is_supervisor(update.effective_user.id):
+        await update.message.reply_text("❌ Solo supervisores.")
+        return
+    data = load_data()
+    if not data["cursos"]:
+        await update.message.reply_text("No hay cursos registrados.")
+        return
+    if not ctx.args:
+        keyboard = []
+        for cid, c in data["cursos"].items():
+            keyboard.append([InlineKeyboardButton(f"🗑 {c['nombre']}", callback_data=f"del_curso_{cid}")])
+        await update.message.reply_text("¿Qué curso quieres eliminar?", reply_markup=InlineKeyboardMarkup(keyboard))
+        return
+    curso_id = ctx.args[0]
+    if curso_id not in data["cursos"]:
+        await update.message.reply_text(f"❌ No encontré el curso `{curso_id}`.", parse_mode="Markdown")
+        return
+    nombre = data["cursos"][curso_id]["nombre"]
+    del data["cursos"][curso_id]
+    save_data(data)
+    await update.message.reply_text(f"✅ Curso *{nombre}* eliminado.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente._", parse_mode="Markdown")
+
+async def del_curso_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if not is_supervisor(query.from_user.id):
+        await query.message.reply_text("❌ Solo supervisores.")
+        return
+    curso_id = query.data.replace("del_curso_", "")
+    data = load_data()
+    if curso_id not in data["cursos"]:
+        await query.message.reply_text("❌ Curso no encontrado.")
+        return
+    nombre = data["cursos"][curso_id]["nombre"]
+    del data["cursos"][curso_id]
+    save_data(data)
+    await query.message.reply_text(f"✅ Curso *{nombre}* eliminado.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente._", parse_mode="Markdown")
+
 # ─── Recordatorio automático ─────────────────────────────────────────────────
 async def recordatorio_curso(ctx: ContextTypes.DEFAULT_TYPE):
     job = ctx.job
@@ -292,7 +361,10 @@ def main():
     app.add_handler(CommandHandler("completados", completados))
     app.add_handler(CommandHandler("pendientes", pendientes))
     app.add_handler(CommandHandler("miscursos", miscursos))
+    app.add_handler(CommandHandler("borrar_boletin", borrar_boletin))
+    app.add_handler(CommandHandler("borrar_curso", borrar_curso))
     app.add_handler(CallbackQueryHandler(hice_callback, pattern="^hice_"))
+    app.add_handler(CallbackQueryHandler(del_curso_callback, pattern="^del_curso_"))
     app.add_handler(MessageHandler(filters.PHOTO, foto_recibida))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, nuevo_miembro))
     logger.info("Bot iniciado ✅")
