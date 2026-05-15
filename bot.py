@@ -11,8 +11,20 @@ from telegram.ext import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.environ.get("BOT_TOKEN", "")
-SUPERVISORS = json.loads(os.environ.get("SUPERVISOR_IDS", "[]"))  # [123456, 789012]
+TOKEN = os.environ.get("BOT_TOKEN") or ""
+TOKEN = TOKEN.strip().strip('"').strip("'")
+logger.info(f"TOKEN inicio: '{TOKEN[:15]}' longitud={len(TOKEN)}")
+if not TOKEN or ":" not in TOKEN:
+    raise RuntimeError(f"BOT_TOKEN invalido. Valor recibido: '{TOKEN}'")
+
+import re as _re
+SUPERVISORS = []
+_raw = os.environ.get("SUPERVISOR_IDS", "")
+if _raw:
+    try:
+        SUPERVISORS = [int(i) for i in _re.findall(r'\d+', _raw)]
+    except Exception:
+        pass
 DATA_FILE = "data.json"
 
 # ─── Persistencia ────────────────────────────────────────────────────────────
