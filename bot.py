@@ -255,6 +255,18 @@ async def foto_recibida(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     save_data(data)
     await update.message.reply_text(f"📸 Foto guardada, gracias {update.effective_user.first_name}!")
 
+# ─── Saludo nuevos miembros ──────────────────────────────────────────────────
+async def nuevo_miembro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    for miembro in update.message.new_chat_members:
+        if miembro.is_bot:
+            continue
+        msg = (
+            f"✈️ ¡Bienvenido/a *{miembro.full_name}* al grupo de Embajadores Volaris!\n\n"
+            f"Aquí encontrarás boletines, cursos y novedades del equipo.\n\n"
+            f"Escribe /start para ver los comandos disponibles 👋"
+        )
+        await update.message.reply_text(msg, parse_mode="Markdown")
+
 # ─── Recordatorio automático ─────────────────────────────────────────────────
 async def recordatorio_curso(ctx: ContextTypes.DEFAULT_TYPE):
     job = ctx.job
@@ -282,6 +294,7 @@ def main():
     app.add_handler(CommandHandler("miscursos", miscursos))
     app.add_handler(CallbackQueryHandler(hice_callback, pattern="^hice_"))
     app.add_handler(MessageHandler(filters.PHOTO, foto_recibida))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, nuevo_miembro))
     logger.info("Bot iniciado ✅")
     app.run_polling()
 
