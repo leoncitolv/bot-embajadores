@@ -38,7 +38,8 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = (
         "✈️ *Embajadores Volaris*\n\n"
         "*Comandos disponibles:*\n\n"
-        "📋 `/boletin` — Publica un boletín (ej: `/boletin ⚠️ Revisar...`)\n"
+        "📋 `/boletin_simple` — Boletín fácil (ej: `/boletin_simple Mane|Revisar aceite|Adriana|Revisar cubetas`)\n"
+        "📋 `/boletin` — Boletín custom (con saltos de línea)\n"
         "📚 `/curso` — Crea un curso con fecha (ej: `/curso Seguridad 2024-05-30`)\n"
         "✅ `/completados` — Muestra quién completó cursos\n"
         "⏳ `/pendientes` — Resumen de pendientes\n"
@@ -67,15 +68,15 @@ async def boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     data["boletin_counter"] += 1
     numero = data["boletin_counter"]
     
-    # Mensaje formateado con Markdown
-    mensaje = f"📋 *BOLETÍN #{numero}*\n\n{texto}\n\n🌙 _Turno nocturno_"
+    # Mensaje formateado con HTML
+    mensaje = f"📋 <b>BOLETÍN #{numero}</b>\n\n{texto}\n\n🌙 <i>Turno nocturno</i>"
     
     try:
         # Enviar al grupo
         sent_msg = await ctx.bot.send_message(
             chat_id=update.effective_chat.id,
             text=mensaje,
-            parse_mode="Markdown"
+            parse_mode="HTML"
         )
         
         # Fijar el mensaje
@@ -95,6 +96,68 @@ async def boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         save_data(data)
         
         logger.info(f"✅ Boletín #{numero} publicado")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}", parse_mode="Markdown")
+
+async def boletin_simple(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /boletin_simple - formato simple para celular (Persona|Tarea|Persona|Tarea)"""
+    if not ctx.args:
+        await update.message.reply_text(
+            "❌ Uso: `/boletin_simple Persona1|Tarea1|Persona2|Tarea2|...`\n\n"
+            "Ejemplo: `/boletin_simple Mane y Joshua|Revisar aceite|Adriana y Brayan|Revisar cubetas|Laura y Aldo|Sacar material`",
+            parse_mode="Markdown"
+        )
+        return
+    
+    texto_completo = " ".join(ctx.args)
+    items = texto_completo.split("|")
+    
+    if len(items) < 2 or len(items) % 2 != 0:
+        await update.message.reply_text(
+            "❌ Debe haber parejas Persona|Tarea\n"
+            "Ejemplo: `/boletin_simple Mane|Revisar aceite|Adriana|Revisar cubetas`",
+            parse_mode="Markdown"
+        )
+        return
+    
+    data = load_data()
+    data["boletin_counter"] += 1
+    numero = data["boletin_counter"]
+    
+    # Construir boletín formateado
+    emojis = ["⚠️", "🚨", "📦", "🔧", "📋", "✈️", "🛠️", "⚡"]
+    lineas = []
+    
+    for i in range(0, len(items), 2):
+        emoji = emojis[(i // 2) % len(emojis)]
+        persona = items[i].strip()
+        tarea = items[i + 1].strip()
+        lineas.append(f"{emoji} <b>{persona}</b>\n• {tarea}")
+    
+    contenido = "\n\n".join(lineas)
+    mensaje = f"📋 <b>BOLETÍN #{numero}</b>\n\n{contenido}\n\n🌙 <i>Turno nocturno</i>"
+    
+    try:
+        sent_msg = await ctx.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=mensaje,
+            parse_mode="HTML"
+        )
+        
+        await ctx.bot.pin_chat_message(
+            chat_id=update.effective_chat.id,
+            message_id=sent_msg.message_id,
+            disable_notification=True
+        )
+        
+        data["boletines"].append({
+            "numero": numero,
+            "texto": contenido,
+            "fecha": datetime.now().isoformat(),
+            "message_id": sent_msg.message_id
+        })
+        save_data(data)
+        logger.info(f"✅ Boletín simple #{numero} publicado")
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {str(e)}", parse_mode="Markdown")
 
@@ -233,6 +296,7 @@ def main():
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("boletin", boletin))
+    app.add_handler(CommandHandler("boletin_simple", boletin_simple))
     app.add_handler(CommandHandler("curso", curso))
     app.add_handler(CommandHandler("completados", completados))
     app.add_handler(CommandHandler("pendientes", pendientes))
