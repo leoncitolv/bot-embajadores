@@ -46,22 +46,18 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Publica un boletín en el grupo"""
-    # Obtener texto completo después del comando
-    texto_completo = update.message.text
-    if texto_completo.startswith("/boletin"):
-        texto = texto_completo.replace("/boletin", "", 1).strip()
-    else:
-        texto = texto_completo
-    
-    if not texto:
+    if not ctx.args:
         await update.message.reply_text("❌ Escribe: `/boletin Tu texto aquí`", parse_mode="Markdown")
         return
+    
+    # Unir todos los argumentos
+    texto = " ".join(ctx.args)
     
     data = load_data()
     data["boletin_counter"] += 1
     numero = data["boletin_counter"]
     
-    mensaje = f"📋 *BOLETÍN #{numero}*\n\n{texto}"
+    mensaje = f"📋 *BOLETÍN #{numero}*\n\n{texto}\n\n🌙 _Turno nocturno_"
     
     try:
         sent_msg = await ctx.bot.send_message(
