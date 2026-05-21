@@ -1,373 +1,241 @@
 import os
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application, CommandHandler, MessageHandler,
-    CallbackQueryHandler, ContextTypes, filters
-)
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.environ.get("BOT_TOKEN") or ""
-TOKEN = TOKEN.strip().strip('"').strip("'")
-logger.info(f"TOKEN inicio: '{TOKEN[:15]}' longitud={len(TOKEN)}")
+TOKEN = os.environ.get("BOT_TOKEN", "").strip().strip('"').strip("'")
+ADMIN_IDS = list(map(int, os.environ.get("ADMIN_IDS", "0").split(","))) if os.environ.get("ADMIN_IDS") else [0]
+DATA_FILE = "embajadores_data.json"
+
 if not TOKEN or ":" not in TOKEN:
-    raise RuntimeError(f"BOT_TOKEN invalido. Valor recibido: '{TOKEN}'")
+    raise RuntimeError(f"BOT_TOKEN inválido: '{TOKEN}'")
 
-import re as _re
-SUPERVISORS = []
-_raw = os.environ.get("SUPERVISOR_IDS", "")
-if _raw:
-    try:
-        SUPERVISORS = [int(i) for i in _re.findall(r'\d+', _raw)]
-    except Exception:
-        pass
-DATA_FILE = "data.json"
+logger.info(f"✅ TOKEN cargado: {TOKEN[:20]}...")
+logger.info(f"✅ ADMIN_IDS: {ADMIN_IDS}")
 
-# ─── Persistencia ────────────────────────────────────────────────────────────
+# ─── Funciones de datos ──────────────────────────────────────────────────────
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
             return json.load(f)
-    return {"cursos": {}, "boletines": [], "fotos": []}
+    return {"boletines": [], "cursos": {}, "boletin_counter": 0}
 
 def save_data(data):
     with open(DATA_FILE, "w") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, indent=2)
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
-def is_supervisor(user_id):
-    return user_id in SUPERVISORS
+def is_admin(user_id):
+    return user_id in ADMIN_IDS
 
-def fmt(text):
-    return text  # sin escape extra para MarkdownV2 por simplicidad
-
-# ─── /start ──────────────────────────────────────────────────────────────────
+# ─── Comandos ─────────────────────────────────────────────────────────────
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    if is_supervisor(uid):
-        msg = (
-            "👋 *Hola Supervisor*\n\n"
-            "Comandos disponibles:\n"
-            "📢 /boletin — Publicar boletin\n"
-            "📚 /curso — Crear nuevo curso\n"
-            "✅ /completados — Ver quién completó un curso\n"
-            "📋 /pendientes — Ver quién NO ha completado\n"
-            "📌 /fijar — Fijar último boletin/curso\n"
-            "📸 /fotos — Ver fotos del equipo"
-        )
-    else:
-        msg = (
-            "👋 *Hola Embajador*\n\n"
-            "Comandos disponibles:\n"
-            "✅ /hice — Marcar curso como completado\n"
-            "📸 Sube fotos directo al grupo con descripción\n"
-            "📋 /miscursos — Ver tus cursos pendientes"
-        )
-    await update.message.reply_text(msg, parse_mode="Markdown")
-
-# ─── /boletin ────────────────────────────────────────────────────────────────
-async def boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores pueden publicar boletines.")
-        return
-    if not ctx.args:
-        await update.message.reply_text("Uso: /boletin <texto del boletin>")
-        return
-    texto = " ".join(ctx.args)
-    data = load_data()
-    entry = {
-        "id": len(data["boletines"]) + 1,
-        "texto": texto,
-        "fecha": datetime.now().isoformat(),
-        "autor": update.effective_user.full_name
-    }
-    data["boletines"].append(entry)
-    save_data(data)
-    msg = f"📢 *BOLETIN #{entry['id']}*\n\n{texto}\n\n_Publicado por {entry['autor']}_"
-    sent = await update.message.reply_text(msg, parse_mode="Markdown")
-    # Fijar automáticamente
-    try:
-        await ctx.bot.pin_chat_message(update.effective_chat.id, sent.message_id)
-    except Exception:
-        pass
-
-# ─── /curso ──────────────────────────────────────────────────────────────────
-async def curso(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores pueden crear cursos.")
-        return
-    # Formato: /curso NombreCurso | DD/MM/YYYY
-    texto = " ".join(ctx.args)
-    if "|" not in texto:
-        await update.message.reply_text("Uso: /curso Nombre del curso | DD/MM/YYYY\nEjemplo: /curso Seguridad en pista | 20/05/2026")
-        return
-    partes = texto.split("|")
-    nombre = partes[0].strip()
-    fecha_limite = partes[1].strip()
-    data = load_data()
-    curso_id = f"curso_{len(data['cursos']) + 1}"
-    data["cursos"][curso_id] = {
-        "nombre": nombre,
-        "fecha_limite": fecha_limite,
-        "creado": datetime.now().isoformat(),
-        "completados": []
-    }
-    save_data(data)
+    """Comando /start"""
     msg = (
-        f"📚 *NUEVO CURSO*\n\n"
-        f"*{nombre}*\n"
-        f"📅 Fecha límite: {fecha_limite}\n\n"
-        f"Cuando lo completes escribe:\n`/hice {curso_id}`"
+        "✈️ *Embajadores Volaris*\n\n"
+        "*Comandos disponibles:*\n\n"
+        "📋 `/boletin` — Publica un boletín (ej: `/boletin ⚠️ Revisar...`)\n"
+        "📚 `/curso` — Crea un curso con fecha (ej: `/curso Seguridad 2024-05-30`)\n"
+        "✅ `/completados` — Muestra quién completó cursos\n"
+        "⏳ `/pendientes` — Resumen de pendientes\n"
+        "🗑️ `/borrar_boletin` — Elimina el último boletín\n"
+        "🗑️ `/borrar_curso` — Elimina un curso\n\n"
+        "_Solo admins pueden ejecutar comandos de eliminación_"
     )
-    sent = await update.message.reply_text(msg, parse_mode="Markdown")
-    try:
-        await ctx.bot.pin_chat_message(update.effective_chat.id, sent.message_id)
-    except Exception:
-        pass
-    # Programar recordatorio 1 día antes
-    try:
-        deadline = datetime.strptime(fecha_limite, "%d/%m/%Y")
-        reminder_date = deadline - timedelta(days=1)
-        delay = (reminder_date - datetime.now()).total_seconds()
-        if delay > 0:
-            ctx.job_queue.run_once(
-                recordatorio_curso,
-                when=delay,
-                data={"chat_id": update.effective_chat.id, "curso_id": curso_id, "nombre": nombre, "fecha": fecha_limite}
-            )
-    except Exception as e:
-        logger.warning(f"No se pudo programar recordatorio: {e}")
+    await update.message.reply_text(msg, parse_mode="Markdown")
 
-# ─── /hice ───────────────────────────────────────────────────────────────────
-async def hice(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /boletin - publica boletín formateado"""
     if not ctx.args:
-        data = load_data()
-        if not data["cursos"]:
-            await update.message.reply_text("No hay cursos registrados.")
-            return
-        keyboard = []
-        for cid, c in data["cursos"].items():
-            keyboard.append([InlineKeyboardButton(f"✅ {c['nombre']}", callback_data=f"hice_{cid}")])
-        await update.message.reply_text("¿Qué curso completaste?", reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text("❌ Uso: `/boletin Tu contenido aquí`", parse_mode="Markdown")
         return
-    curso_id = ctx.args[0]
-    await _marcar_completado(update.effective_user, curso_id, update.message)
-
-async def hice_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    curso_id = query.data.replace("hice_", "")
-    await _marcar_completado(query.from_user, curso_id, query.message)
-
-async def _marcar_completado(user, curso_id, message):
+    
     data = load_data()
-    if curso_id not in data["cursos"]:
-        await message.reply_text("❌ Curso no encontrado.")
-        return
-    curso_data = data["cursos"][curso_id]
-    uid = str(user.id)
-    if uid in [str(c["id"]) for c in curso_data["completados"]]:
-        await message.reply_text(f"Ya marcaste *{curso_data['nombre']}* como completado ✅", parse_mode="Markdown")
-        return
-    curso_data["completados"].append({
-        "id": user.id,
-        "nombre": user.full_name,
-        "fecha": datetime.now().isoformat()
-    })
-    save_data(data)
-    await message.reply_text(f"✅ *{user.full_name}* completó el curso *{curso_data['nombre']}* 🎉", parse_mode="Markdown")
-
-# ─── /completados ────────────────────────────────────────────────────────────
-async def completados(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores.")
-        return
-    data = load_data()
-    if not data["cursos"]:
-        await update.message.reply_text("No hay cursos registrados.")
-        return
-    msg = "✅ *COMPLETADOS POR CURSO*\n\n"
-    for cid, c in data["cursos"].items():
-        msg += f"📚 *{c['nombre']}* (límite: {c['fecha_limite']})\n"
-        if c["completados"]:
-            for p in c["completados"]:
-                msg += f"  • {p['nombre']}\n"
-        else:
-            msg += "  _Nadie aún_\n"
-        msg += "\n"
-    await update.message.reply_text(msg, parse_mode="Markdown")
-
-# ─── /pendientes ─────────────────────────────────────────────────────────────
-async def pendientes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores.")
-        return
-    data = load_data()
-    if not data["cursos"]:
-        await update.message.reply_text("No hay cursos registrados.")
-        return
-    msg = "⏳ *PENDIENTES POR CURSO*\n\n"
-    for cid, c in data["cursos"].items():
-        completados_ids = [str(p["id"]) for p in c["completados"]]
-        msg += f"📚 *{c['nombre']}* (límite: {c['fecha_limite']})\n"
-        msg += f"  ✅ {len(completados_ids)} completados\n"
-        msg += f"  ❌ Pendientes: ver lista con /completados\n\n"
-    await update.message.reply_text(msg, parse_mode="Markdown")
-
-# ─── /miscursos ──────────────────────────────────────────────────────────────
-async def miscursos(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    uid = str(update.effective_user.id)
-    data = load_data()
-    pendientes_lista = []
-    completados_lista = []
-    for cid, c in data["cursos"].items():
-        ids = [str(p["id"]) for p in c["completados"]]
-        if uid in ids:
-            completados_lista.append(c["nombre"])
-        else:
-            pendientes_lista.append(f"{c['nombre']} (límite: {c['fecha_limite']})")
-    msg = f"📋 *Tus cursos, {update.effective_user.first_name}*\n\n"
-    if pendientes_lista:
-        msg += "❌ *Pendientes:*\n" + "\n".join(f"  • {p}" for p in pendientes_lista) + "\n\n"
-    if completados_lista:
-        msg += "✅ *Completados:*\n" + "\n".join(f"  • {c}" for c in completados_lista)
-    if not pendientes_lista and not completados_lista:
-        msg += "_No hay cursos registrados aún._"
-    await update.message.reply_text(msg, parse_mode="Markdown")
-
-# ─── Fotos ───────────────────────────────────────────────────────────────────
-async def foto_recibida(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not update.message.photo:
-        return
-    data = load_data()
-    caption = update.message.caption or "(sin descripción)"
-    data["fotos"].append({
-        "usuario": update.effective_user.full_name,
-        "usuario_id": update.effective_user.id,
-        "caption": caption,
-        "fecha": datetime.now().isoformat(),
-        "file_id": update.message.photo[-1].file_id
-    })
-    save_data(data)
-    await update.message.reply_text(f"📸 Foto guardada, gracias {update.effective_user.first_name}!")
-
-# ─── Saludo nuevos miembros ──────────────────────────────────────────────────
-async def nuevo_miembro(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    for miembro in update.message.new_chat_members:
-        if miembro.is_bot:
-            continue
-        msg = (
-            f"✈️ ¡Bienvenido/a *{miembro.full_name}* al grupo de Embajadores Volaris!\n\n"
-            f"Aquí encontrarás boletines, cursos y novedades del equipo.\n\n"
-            f"Escribe /start para ver los comandos disponibles 👋"
+    data["boletin_counter"] += 1
+    numero = data["boletin_counter"]
+    
+    # Unir argumentos para obtener el texto completo
+    texto = "\n".join(ctx.args)
+    
+    # Mensaje formateado con Markdown
+    mensaje = f"📋 *BOLETÍN #{numero}*\n\n{texto}\n\n🌙 _Turno nocturno_"
+    
+    try:
+        # Enviar al grupo
+        sent_msg = await ctx.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=mensaje,
+            parse_mode="Markdown"
         )
-        await update.message.reply_text(msg, parse_mode="Markdown")
+        
+        # Fijar el mensaje
+        await ctx.bot.pin_chat_message(
+            chat_id=update.effective_chat.id,
+            message_id=sent_msg.message_id,
+            disable_notification=True
+        )
+        
+        # Guardar en datos
+        data["boletines"].append({
+            "numero": numero,
+            "texto": texto,
+            "fecha": datetime.now().isoformat(),
+            "message_id": sent_msg.message_id
+        })
+        save_data(data)
+        
+        logger.info(f"✅ Boletín #{numero} publicado")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}", parse_mode="Markdown")
 
-# ─── /borrar_boletin ─────────────────────────────────────────────────────────
 async def borrar_boletin(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores.")
+    """Comando /borrar_boletin - solo para admins"""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("❌ No tienes permisos", parse_mode="Markdown")
         return
+    
     data = load_data()
     if not data["boletines"]:
-        await update.message.reply_text("No hay boletines registrados.")
+        await update.message.reply_text("❌ No hay boletines para borrar", parse_mode="Markdown")
         return
-    if not ctx.args:
-        lista = "\n".join([f"  *#{b['id']}* — {b['texto'][:40]}..." for b in data["boletines"]])
+    
+    ultimo = data["boletines"].pop()
+    try:
+        await ctx.bot.delete_message(
+            chat_id=update.effective_chat.id,
+            message_id=ultimo["message_id"]
+        )
+        save_data(data)
+        await update.message.reply_text(f"✅ Boletín #{ultimo['numero']} eliminado", parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error al eliminar: {str(e)}", parse_mode="Markdown")
+
+async def curso(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /curso - crea un curso con fecha límite"""
+    if len(ctx.args) < 2:
         await update.message.reply_text(
-            f"📢 *Boletines existentes:*\n\n{lista}\n\nUso: `/borrar_boletin <numero>`\nEjemplo: `/borrar_boletin 1`",
+            "❌ Uso: `/curso nombre_curso YYYY-MM-DD`\nEj: `/curso Seguridad 2024-05-30`",
             parse_mode="Markdown"
         )
         return
+    
+    nombre = " ".join(ctx.args[:-1])
+    fecha = ctx.args[-1]
+    
+    data = load_data()
+    curso_id = len(data["cursos"]) + 1
+    
+    data["cursos"][str(curso_id)] = {
+        "nombre": nombre,
+        "fecha": fecha,
+        "completados": [],
+        "message_id": None
+    }
+    save_data(data)
+    
+    mensaje = f"📚 *CURSO #{curso_id}*\n\n*{nombre}*\n⏰ Vence: {fecha}\n✅ Completados: 0"
+    
     try:
-        num = int(ctx.args[0])
-    except ValueError:
-        await update.message.reply_text("Uso: /borrar_boletin <numero>\nEjemplo: /borrar_boletin 1")
-        return
-    antes = len(data["boletines"])
-    data["boletines"] = [b for b in data["boletines"] if b["id"] != num]
-    if len(data["boletines"]) == antes:
-        await update.message.reply_text(f"❌ No encontré el boletín #{num}.")
-        return
-    save_data(data)
-    await update.message.reply_text(f"✅ Boletín #{num} eliminado del registro.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente si aún aparece._", parse_mode="Markdown")
+        sent_msg = await ctx.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=mensaje,
+            parse_mode="Markdown"
+        )
+        
+        data["cursos"][str(curso_id)]["message_id"] = sent_msg.message_id
+        save_data(data)
+        
+        await ctx.bot.pin_chat_message(
+            chat_id=update.effective_chat.id,
+            message_id=sent_msg.message_id,
+            disable_notification=True
+        )
+        logger.info(f"✅ Curso #{curso_id} creado")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}", parse_mode="Markdown")
 
-# ─── /borrar_curso ────────────────────────────────────────────────────────────
-async def borrar_curso(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    if not is_supervisor(update.effective_user.id):
-        await update.message.reply_text("❌ Solo supervisores.")
-        return
+async def completados(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /completados - muestra quién completó"""
     data = load_data()
+    
     if not data["cursos"]:
-        await update.message.reply_text("No hay cursos registrados.")
+        await update.message.reply_text("❌ No hay cursos", parse_mode="Markdown")
         return
+    
+    mensaje = "✅ *COMPLETADOS*\n\n"
+    for curso_id, curso in data["cursos"].items():
+        completados_list = ", ".join(curso["completados"]) if curso["completados"] else "Nadie aún"
+        mensaje += f"📚 *{curso['nombre']}*\n{completados_list}\n\n"
+    
+    await update.message.reply_text(mensaje, parse_mode="Markdown")
+
+async def pendientes(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /pendientes - resumen de tareas pendientes"""
+    data = load_data()
+    
+    mensaje = "⏳ *PENDIENTES*\n\n"
+    if data["boletines"]:
+        mensaje += f"📋 Último boletín: #{data['boletines'][-1]['numero']}\n\n"
+    
+    if data["cursos"]:
+        mensaje += "📚 *Cursos activos:*\n"
+        for curso in data["cursos"].values():
+            pendientes_count = 3  # Ajusta según tu lógica
+            mensaje += f"• {curso['nombre']} - Vence {curso['fecha']}\n"
+    else:
+        mensaje += "✅ Sin cursos pendientes"
+    
+    await update.message.reply_text(mensaje, parse_mode="Markdown")
+
+async def borrar_curso(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Comando /borrar_curso - solo para admins"""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("❌ No tienes permisos", parse_mode="Markdown")
+        return
+    
     if not ctx.args:
-        keyboard = []
-        for cid, c in data["cursos"].items():
-            keyboard.append([InlineKeyboardButton(f"🗑 {c['nombre']}", callback_data=f"del_curso_{cid}")])
-        await update.message.reply_text("¿Qué curso quieres eliminar?", reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text("❌ Uso: `/borrar_curso ID`", parse_mode="Markdown")
         return
+    
+    data = load_data()
     curso_id = ctx.args[0]
+    
     if curso_id not in data["cursos"]:
-        await update.message.reply_text(f"❌ No encontré el curso `{curso_id}`.", parse_mode="Markdown")
+        await update.message.reply_text("❌ Curso no encontrado", parse_mode="Markdown")
         return
-    nombre = data["cursos"][curso_id]["nombre"]
-    del data["cursos"][curso_id]
+    
+    curso = data["cursos"].pop(curso_id)
     save_data(data)
-    await update.message.reply_text(f"✅ Curso *{nombre}* eliminado.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente._", parse_mode="Markdown")
+    
+    try:
+        if curso["message_id"]:
+            await ctx.bot.delete_message(
+                chat_id=update.effective_chat.id,
+                message_id=curso["message_id"]
+            )
+        await update.message.reply_text(f"✅ Curso '{curso['nombre']}' eliminado", parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}", parse_mode="Markdown")
 
-async def del_curso_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    if not is_supervisor(query.from_user.id):
-        await query.message.reply_text("❌ Solo supervisores.")
-        return
-    curso_id = query.data.replace("del_curso_", "")
-    data = load_data()
-    if curso_id not in data["cursos"]:
-        await query.message.reply_text("❌ Curso no encontrado.")
-        return
-    nombre = data["cursos"][curso_id]["nombre"]
-    del data["cursos"][curso_id]
-    save_data(data)
-    await query.message.reply_text(f"✅ Curso *{nombre}* eliminado.\n_Recuerda desfijar/eliminar el mensaje del grupo manualmente._", parse_mode="Markdown")
-
-# ─── Recordatorio automático ─────────────────────────────────────────────────
-async def recordatorio_curso(ctx: ContextTypes.DEFAULT_TYPE):
-    job = ctx.job
-    d = job.data
-    data = load_data()
-    c = data["cursos"].get(d["curso_id"], {})
-    completados_n = len(c.get("completados", []))
-    msg = (
-        f"⏰ *RECORDATORIO*\n\n"
-        f"El curso *{d['nombre']}* vence mañana ({d['fecha']})\n"
-        f"✅ {completados_n} personas lo han completado\n\n"
-        f"Si aún no lo hiciste: `/hice {d['curso_id']}`"
-    )
-    await ctx.bot.send_message(d["chat_id"], msg, parse_mode="Markdown")
-
-# ─── Main ─────────────────────────────────────────────────────────────────────
+# ─── Main ───────────────────────────────────────────────────────────────────
 def main():
     app = Application.builder().token(TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("boletin", boletin))
     app.add_handler(CommandHandler("curso", curso))
-    app.add_handler(CommandHandler("hice", hice))
     app.add_handler(CommandHandler("completados", completados))
     app.add_handler(CommandHandler("pendientes", pendientes))
-    app.add_handler(CommandHandler("miscursos", miscursos))
     app.add_handler(CommandHandler("borrar_boletin", borrar_boletin))
     app.add_handler(CommandHandler("borrar_curso", borrar_curso))
-    app.add_handler(CallbackQueryHandler(hice_callback, pattern="^hice_"))
-    app.add_handler(CallbackQueryHandler(del_curso_callback, pattern="^del_curso_"))
-    app.add_handler(MessageHandler(filters.PHOTO, foto_recibida))
-    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, nuevo_miembro))
-    logger.info("Bot iniciado ✅")
+    
+    logger.info("🚀 Bot Embajadores Volaris iniciado")
+    logger.info("✅ Comandos cargados: /start /boletin /curso /completados /pendientes /borrar_boletin /borrar_curso")
+    
     app.run_polling()
 
 if __name__ == "__main__":
